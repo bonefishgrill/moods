@@ -1,25 +1,43 @@
 {
-  "work": [
-    "s--IkNqI9og",
-    "Xw5AiRVqfqk",
-    "ftrNgYHxS30",
-    "C-yhzrCFsA0",
-    "09B2gn5OhKg",
-    "xwLTFyMsXrY",
-    "q86g1aop6a8",
-    "ZJSuKb8YAYI",
-    "TSXxP1GN9Nk"
-  ],
-  "boost": [
-    "v3aO2jM-66A",
-    "kIeP0Z2ymww",
-    "Tsk6LRwjPMI",
-    "QZSY7LcUyxI",
-    "s5OGRCyFYfI",
-    "wQFb9a3LyNI"
-  ],
-  "still": [],
-  "empty": [],
-  "well": [],
-  "random": []
+  "work": {
+    "label": "I need to work — something quiet and calming",
+    "videos": [
+      "s--IkNqI9og",
+      "Xw5AiRVqfqk",
+      "ftrNgYHxS30",
+      "C-yhzrCFsA0",
+      "09B2gn5OhKg",
+      "xwLTFyMsXrY",
+      "q86g1aop6a8",
+      "ZJSuKb8YAYI",
+      "TSXxP1GN9Nk"
+    ]
+  },
+  "boost": {
+    "label": "I need energy — I'm tired and need a boost",
+    "videos": [
+      "v3aO2jM-66A",
+      "kIeP0Z2ymww",
+      "Tsk6LRwjPMI",
+      "QZSY7LcUyxI",
+      "s5OGRCyFYfI",
+      "wQFb9a3LyNI"
+    ]
+  },
+  "still": {
+    "label": "I feel the weight of the world and watch the snow come down",
+    "videos": []
+  },
+  "empty": {
+    "label": "I'm feeling empty",
+    "videos": []
+  },
+  "well": {
+    "label": "All is well and everything shall be well",
+    "videos": []
+  },
+  "random": {
+    "label": "Random",
+    "videos": []
+  }
 }

@@ -237,14 +237,7 @@
 
     <div class="window-content">
 
-      <div class="buttons">
-        <button data-mood="work">I need to work — something quiet and calming</button>
-        <button data-mood="boost">I need energy — I'm tired and need a boost</button>
-        <button data-mood="still">I feel the weight of the world and watch the snow come down</button>
-        <button data-mood="empty">I'm feeling empty</button>
-        <button data-mood="well">All is well and everything shall be well</button>
-        <button data-mood="random">Random</button>
-      </div>
+      <div class="buttons" id="buttons"></div>
 
       <!-- Player as its own Mac window -->
       <div class="player-window" id="playerWrap">
@@ -271,7 +264,17 @@
 
     fetch('playlists.json')
       .then(r => r.json())
-      .then(data => { MOODS = data; });
+      .then(data => {
+        MOODS = data;
+        const container = document.getElementById('buttons');
+        Object.entries(MOODS).forEach(([mood, val]) => {
+          const btn = document.createElement('button');
+          btn.dataset.mood = mood;
+          btn.textContent = val.label;
+          btn.addEventListener('click', () => onMoodClick(mood, btn));
+          container.appendChild(btn);
+        });
+      });
 
     // Clock
     function updateClock() {
@@ -300,26 +303,24 @@
 
     let lastVideo = null;
 
-    document.querySelectorAll('[data-mood]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const mood = btn.dataset.mood;
-        const allVideos = Object.entries(MOODS)
-          .filter(([k]) => k !== 'random')
-          .flatMap(([, v]) => v);
-        const videos = mood === 'random' ? allVideos : MOODS[mood];
-        const videoId = pickRandom(videos, lastVideo);
-        lastVideo = videoId;
+    function onMoodClick(mood, btn) {
+      const allVideos = Object.entries(MOODS)
+        .filter(([k]) => k !== 'random')
+        .flatMap(([, v]) => v.videos);
+      const videos = mood === 'random' ? allVideos : MOODS[mood].videos;
+      const videoId = pickRandom(videos, lastVideo);
+      if (!videoId) return;
+      lastVideo = videoId;
 
-        document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+      document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-        document.getElementById('hint').textContent = 'Playing: ' + mood.toUpperCase();
-        document.getElementById('playerTitle').textContent = mood.toUpperCase();
-        document.getElementById('playerWrap').classList.add('visible');
+      document.getElementById('hint').textContent = 'Playing: ' + mood.toUpperCase();
+      document.getElementById('playerTitle').textContent = mood.toUpperCase();
+      document.getElementById('playerWrap').classList.add('visible');
 
-        if (player && player.loadVideoById) player.loadVideoById(videoId);
-      });
-    });
+      if (player && player.loadVideoById) player.loadVideoById(videoId);
+    }
 
     // Close button hides player
     document.getElementById('playerClose').addEventListener('click', () => {
