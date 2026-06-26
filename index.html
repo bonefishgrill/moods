@@ -3,69 +3,190 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>moods</title>
+  <title>Moods</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    :root {
+      --black: #000;
+      --white: #fff;
+    }
+
+    /* Classic Mac desktop dot pattern */
     body {
-      background: #080808;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background-color: var(--white);
+      background-image: radial-gradient(circle, #000 1px, transparent 1px);
+      background-size: 8px 8px;
+      font-family: 'VT323', 'Monaco', 'Courier New', monospace;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 48px;
-      padding: 40px 20px;
+      padding-top: 24px;
+      padding-bottom: 40px;
     }
 
+    /* ── Menu bar ── */
+    .menu-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 20px;
+      background: var(--white);
+      border-bottom: 1px solid var(--black);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 20px;
+      font-size: 13px;
+      z-index: 100;
+      image-rendering: pixelated;
+    }
+
+    .menu-bar .apple { font-size: 14px; }
+    .menu-bar span { cursor: default; white-space: nowrap; }
+    .menu-bar span:hover { background: var(--black); color: var(--white); padding: 0 4px; }
+
+    /* ── Window ── */
+    .window {
+      margin-top: 32px;
+      background: var(--white);
+      border: 2px solid var(--black);
+      box-shadow: 4px 4px 0 var(--black);
+      width: 100%;
+      max-width: 680px;
+      image-rendering: pixelated;
+    }
+
+    /* Classic Mac title bar — horizontal pinstripes */
+    .title-bar {
+      height: 20px;
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--white) 0px, var(--white) 1px,
+        var(--black) 1px, var(--black) 2px
+      );
+      border-bottom: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      user-select: none;
+    }
+
+    .title-bar-title {
+      background: var(--white);
+      padding: 0 8px;
+      font-size: 13px;
+      font-family: 'VT323', 'Monaco', monospace;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    .close-box {
+      position: absolute;
+      left: 6px;
+      width: 11px;
+      height: 11px;
+      border: 1px solid var(--black);
+      background: var(--white);
+      cursor: pointer;
+    }
+
+    .close-box:hover {
+      background: var(--black);
+    }
+
+    /* ── Window content ── */
+    .window-content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── Mood buttons ── */
     .buttons {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      width: 100%;
-      max-width: 480px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
     }
 
     button {
-      background: none;
-      border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.35);
-      font-family: inherit;
-      font-size: 11px;
-      font-weight: 300;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      padding: 18px 12px;
+      background: var(--white);
+      border: 2px solid var(--black);
+      box-shadow: 2px 2px 0 var(--black);
+      color: var(--black);
+      font-family: 'VT323', 'Monaco', monospace;
+      font-size: 16px;
+      letter-spacing: 0.04em;
+      padding: 12px 10px 10px;
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-      border-radius: 2px;
+      transition: none;
+      image-rendering: pixelated;
+      text-transform: uppercase;
+      text-align: left;
+      line-height: 1.2;
     }
 
     button:hover {
-      border-color: rgba(255,255,255,0.35);
-      color: rgba(255,255,255,0.75);
+      /* 50% dither pattern for hover state */
+      background-image: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%);
+      background-size: 2px 2px;
     }
 
+    button:active,
     button.active {
-      border-color: rgba(255,255,255,0.7);
-      color: #fff;
+      background: var(--black);
+      color: var(--white);
+      box-shadow: none;
+      transform: translate(2px, 2px);
+    }
+
+    /* ── Player window ── */
+    .player-window {
+      border: 2px solid var(--black);
+      box-shadow: 4px 4px 0 var(--black);
+      overflow: hidden;
+      display: none;
+    }
+
+    .player-window.visible { display: block; }
+
+    .player-title-bar {
+      height: 18px;
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--white) 0px, var(--white) 1px,
+        var(--black) 1px, var(--black) 2px
+      );
+      border-bottom: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .player-title-bar .close-box {
+      left: 5px;
+      width: 10px;
+      height: 10px;
+    }
+
+    .player-title-text {
+      background: var(--white);
+      padding: 0 6px;
+      font-size: 12px;
+      font-family: 'VT323', 'Monaco', monospace;
     }
 
     .player-wrap {
       width: 100%;
-      max-width: 720px;
       aspect-ratio: 16/9;
-      background: #111;
+      background: var(--black);
       position: relative;
-      overflow: hidden;
-      border-radius: 2px;
-      opacity: 0;
-      transition: opacity 0.4s;
     }
-
-    .player-wrap.visible { opacity: 1; }
 
     #player {
       position: absolute;
@@ -73,85 +194,134 @@
       width: 100%; height: 100%;
     }
 
-    .hint {
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      color: rgba(255,255,255,0.15);
-      text-transform: uppercase;
+    /* ── Status bar ── */
+    .status-bar {
+      border-top: 2px solid var(--black);
+      padding: 4px 10px;
+      font-size: 13px;
+      font-family: 'VT323', 'Monaco', monospace;
+      color: var(--black);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--white);
+    }
+
+    /* ── Resize corner ── */
+    .resize-corner {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 12px; height: 12px;
+      background: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%);
+      background-size: 2px 2px;
     }
   </style>
 </head>
 <body>
 
-  <div class="buttons">
-    <button data-mood="work">Work</button>
-    <button data-mood="boost">Boost</button>
-    <button data-mood="still">Still</button>
-    <button data-mood="empty">Empty</button>
-    <button data-mood="well">Well</button>
-    <button data-mood="random">Random</button>
+  <!-- Classic Mac menu bar -->
+  <div class="menu-bar">
+    <span class="apple">&#63743;</span>
+    <span><b>Moods</b></span>
+    <span>File</span>
+    <span>Edit</span>
+    <span>View</span>
   </div>
 
-  <div class="player-wrap" id="playerWrap">
-    <div id="player"></div>
-  </div>
+  <!-- Main window -->
+  <div class="window">
+    <div class="title-bar">
+      <div class="close-box"></div>
+      <span class="title-bar-title">Moods v1.0</span>
+    </div>
 
-  <span class="hint" id="hint">choose a mood</span>
+    <div class="window-content">
+
+      <div class="buttons">
+        <button data-mood="work">I need to work — something quiet and calming</button>
+        <button data-mood="boost">I need energy — I'm tired and need a boost</button>
+        <button data-mood="still">I feel the weight of the world and watch the snow come down</button>
+        <button data-mood="empty">I'm feeling empty</button>
+        <button data-mood="well">All is well and everything shall be well</button>
+        <button data-mood="random">Random</button>
+      </div>
+
+      <!-- Player as its own Mac window -->
+      <div class="player-window" id="playerWrap">
+        <div class="player-title-bar">
+          <div class="close-box" id="playerClose"></div>
+          <span class="player-title-text" id="playerTitle">Now Playing</span>
+        </div>
+        <div class="player-wrap">
+          <div id="player"></div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span id="hint">Select a mood to begin</span>
+        <span id="clock"></span>
+      </div>
+
+    </div>
+  </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     const MOODS = {
       work: [
-        'jfKfPfyJRdk', // Lofi Girl – 24/7 lofi hip hop
-        'rUxyKA_okbc', // Marconi Union – Weightless (scientifically relaxing)
-        'b_YHE4Sx-08', // Max Richter – On the Nature of Daylight
-        '4Tr0otuiQuU', // Brian Eno – Ambient 1: Music for Airports
-        'WPni755-Krg', // Deep Focus – no lyrics ambient
+        'jfKfPfyJRdk',
+        'rUxyKA_okbc',
+        'b_YHE4Sx-08',
+        '4Tr0otuiQuU',
+        'WPni755-Krg',
       ],
       boost: [
-        'btPJPFnesV4', // Eminem – Lose Yourself
-        'Y8HOfcYWZoo', // Daft Punk – Get Lucky
-        '_E0PWQvVkWI', // Eye of the Tiger – Survivor
-        'IcrbM1l_BoI', // Kendrick Lamar – m.A.A.d city
-        'gCYcHz2k5x0', // High Energy Workout Mix
+        'btPJPFnesV4',
+        'Y8HOfcYWZoo',
+        '_E0PWQvVkWI',
+        'IcrbM1l_BoI',
+        'gCYcHz2k5x0',
       ],
       still: [
-        'J3OBjFMVG8U', // Bon Iver – Holocene
-        'WKsJFBBGBkk', // Sufjan Stevens – Death With Dignity
-        'aGSKrUooktg', // Sigur Rós – Hoppípolla
-        'bfGCopP_JiU', // The National – Bloodbuzz Ohio
-        'CvFH_6DNRCY', // Phoebe Bridgers – Motion Sickness
+        'J3OBjFMVG8U',
+        'WKsJFBBGBkk',
+        'aGSKrUooktg',
+        'bfGCopP_JiU',
+        'CvFH_6DNRCY',
       ],
       empty: [
-        'aMZ4QL0orw0', // Radiohead – Exit Music (For a Film)
-        'b_YHE4Sx-08', // Max Richter – On the Nature of Daylight
-        '4Tr0otuiQuU', // Brian Eno – Ambient 1
-        'f02mOEt11OQ', // Nils Frahm – Says
-        'KOzDU1DjkzE', // Stars of the Lid – Requiem for Dying Mothers
+        'aMZ4QL0orw0',
+        'b_YHE4Sx-08',
+        '4Tr0otuiQuU',
+        'f02mOEt11OQ',
+        'KOzDU1DjkzE',
       ],
       well: [
-        'bt2-OmOP2XM', // Van Morrison – Into the Mystic
-        'YBcdt6vFNRA', // Fleet Foxes – Helplessness Blues
-        'vY_hip8i_MY', // Iron & Wine – Naked As We Came
-        'UmPyLFBpFRs', // Nick Drake – Pink Moon
-        'ExIHkGNMHqo', // Bill Withers – Lean on Me
+        'bt2-OmOP2XM',
+        'YBcdt6vFNRA',
+        'vY_hip8i_MY',
+        'UmPyLFBpFRs',
+        'ExIHkGNMHqo',
       ],
-      random: [], // populated at runtime from all other moods
+      random: [],
     };
 
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
     let player = null;
-    let currentMood = null;
 
     window.onYouTubeIframeAPIReady = function() {
       player = new YT.Player('player', {
         height: '100%',
         width: '100%',
-        playerVars: {
-          autoplay: 1,
-          controls: 1,
-          rel: 0,
-          modestbranding: 1,
-        },
+        playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1 },
         events: { onReady: () => {} }
       });
     };
@@ -173,21 +343,23 @@
         const videoId = pickRandom(videos, lastVideo);
         lastVideo = videoId;
 
-        // Update active state
         document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        currentMood = mood;
 
-        // Update hint
-        document.getElementById('hint').textContent = mood;
-
-        // Show player and load video
+        document.getElementById('hint').textContent = 'Playing: ' + mood.toUpperCase();
+        document.getElementById('playerTitle').textContent = mood.toUpperCase();
         document.getElementById('playerWrap').classList.add('visible');
 
-        if (player && player.loadVideoById) {
-          player.loadVideoById(videoId);
-        }
+        if (player && player.loadVideoById) player.loadVideoById(videoId);
       });
+    });
+
+    // Close button hides player
+    document.getElementById('playerClose').addEventListener('click', () => {
+      document.getElementById('playerWrap').classList.remove('visible');
+      document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
+      document.getElementById('hint').textContent = 'Select a mood to begin';
+      if (player && player.stopVideo) player.stopVideo();
     });
   </script>
 </body>
