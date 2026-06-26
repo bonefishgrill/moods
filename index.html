@@ -89,7 +89,7 @@
     <button data-mood="still">Still</button>
     <button data-mood="empty">Empty</button>
     <button data-mood="well">Well</button>
-    <button data-mood="cozy">Cozy</button>
+    <button data-mood="random">Random</button>
   </div>
 
   <div class="player-wrap" id="playerWrap">
@@ -136,13 +136,7 @@
         'UmPyLFBpFRs', // Nick Drake – Pink Moon
         'ExIHkGNMHqo', // Bill Withers – Lean on Me
       ],
-      cozy: [
-        'L_LUpnjgPso', // Fireplace + Rain
-        'q76bMs-NwRk', // Rainy Day Ambience
-        'hHW1oY26kxQ', // Autumn Cabin
-        'ALoegXP0Zs0', // Jazz in a Cozy Room
-        'DVgKyg_nkBQ', // Winter Evening Ambience
-      ],
+      random: [], // populated at runtime from all other moods
     };
 
     let player = null;
@@ -172,7 +166,10 @@
     document.querySelectorAll('[data-mood]').forEach(btn => {
       btn.addEventListener('click', () => {
         const mood = btn.dataset.mood;
-        const videos = MOODS[mood];
+        const allVideos = Object.entries(MOODS)
+          .filter(([k]) => k !== 'random')
+          .flatMap(([, v]) => v);
+        const videos = mood === 'random' ? allVideos : MOODS[mood];
         const videoId = pickRandom(videos, lastVideo);
         lastVideo = videoId;
 
