@@ -268,6 +268,22 @@
     let player = null;
     let playerReady = false;
     let currentMood = null;
+    let stallTimer = null;
+
+    function clearStall() {
+      if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+    }
+
+    function armStall() {
+      clearStall();
+      stallTimer = setTimeout(() => {
+        // If still unstarted or cued after 5s, the video is blocked — skip it
+        const state = player && player.getPlayerState();
+        if (state === YT.PlayerState.UNSTARTED || state === YT.PlayerState.CUED || state === -1) {
+          playNext();
+        }
+      }, 5000);
+    }
 
     window.onYouTubeIframeAPIReady = function() {
       player = new YT.Player('player', {
@@ -277,9 +293,10 @@
         events: {
           onReady: () => { playerReady = true; },
           onStateChange: (e) => {
-            if (e.data === YT.PlayerState.ENDED) playNext();
+            if (e.data === YT.PlayerState.ENDED) { clearStall(); playNext(); }
+            else if (e.data === YT.PlayerState.PLAYING) clearStall();
           },
-          onError: () => playNext()
+          onError: () => { clearStall(); playNext(); }
         }
       });
     };
@@ -294,17 +311,19 @@
       if (!videoId) return;
       lastVideo = videoId;
       player.loadVideoById(videoId);
+      armStall();
     }
 
     function loadPlayer(videoId) {
       if (playerReady) {
         player.loadVideoById(videoId);
+        armStall();
       } else {
-        // Player not ready yet — wait for it then play
         const interval = setInterval(() => {
           if (playerReady) {
             clearInterval(interval);
             player.loadVideoById(videoId);
+            armStall();
           }
         }, 100);
       }
