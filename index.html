@@ -259,9 +259,22 @@
     setInterval(updateClock, 1000);
 
     let player = null;
+    let playerReady = false;
     let currentMood = null;
 
-    window.onYouTubeIframeAPIReady = function() {};
+    window.onYouTubeIframeAPIReady = function() {
+      player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        playerVars: { controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
+        events: {
+          onReady: () => { playerReady = true; },
+          onStateChange: (e) => {
+            if (e.data === YT.PlayerState.ENDED) playNext();
+          }
+        }
+      });
+    };
 
     function getPool(mood) {
       return MOODS[mood].videos;
@@ -276,21 +289,16 @@
     }
 
     function loadPlayer(videoId) {
-      if (player) {
+      if (playerReady) {
         player.loadVideoById(videoId);
       } else {
-        player = new YT.Player('player', {
-          height: '100%',
-          width: '100%',
-          videoId: videoId,
-          playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, mute: 1, playsinline: 1 },
-          events: {
-            onReady: (e) => e.target.playVideo(),
-            onStateChange: (e) => {
-              if (e.data === YT.PlayerState.ENDED) playNext();
-            }
+        // Player not ready yet — wait for it then play
+        const interval = setInterval(() => {
+          if (playerReady) {
+            clearInterval(interval);
+            player.loadVideoById(videoId);
           }
-        });
+        }, 100);
       }
     }
 
