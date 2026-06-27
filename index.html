@@ -24,29 +24,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-top: 24px;
+      padding-top: 40px;
       padding-bottom: 40px;
     }
 
-    /* ── Menu bar ── */
-    .menu-bar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 20px;
-      background: var(--white);
-      border-bottom: 1px solid var(--black);
-      display: flex;
-      align-items: center;
-      padding: 0 8px;
-      gap: 20px;
-      font-size: 13px;
-      z-index: 100;
-      image-rendering: pixelated;
-    }
-
-    .menu-bar .apple { font-size: 14px; }
-    .menu-bar span { cursor: default; white-space: nowrap; }
-    .menu-bar span:hover { background: var(--black); color: var(--white); padding: 0 4px; }
 
     /* ── Window ── */
     .window {
@@ -119,15 +100,15 @@
       box-shadow: 2px 2px 0 var(--black);
       color: var(--black);
       font-family: 'VT323', 'Monaco', monospace;
-      font-size: 16px;
+      font-size: 22px;
       letter-spacing: 0.04em;
-      padding: 12px 10px 10px;
+      padding: 20px 14px 18px;
       cursor: pointer;
       transition: none;
       image-rendering: pixelated;
       text-transform: uppercase;
       text-align: left;
-      line-height: 1.2;
+      line-height: 1.3;
     }
 
     button:hover {
@@ -219,14 +200,6 @@
 </head>
 <body>
 
-  <!-- Classic Mac menu bar -->
-  <div class="menu-bar">
-    <span class="apple">&#63743;</span>
-    <span><b>Moods</b></span>
-    <span>File</span>
-    <span>Edit</span>
-    <span>View</span>
-  </div>
 
   <!-- Main window -->
   <div class="window">
