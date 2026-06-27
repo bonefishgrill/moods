@@ -264,10 +264,7 @@
     window.onYouTubeIframeAPIReady = function() {};
 
     function getPool(mood) {
-      const allVideos = Object.entries(MOODS)
-        .filter(([k]) => k !== 'random')
-        .flatMap(([, v]) => v.videos);
-      return mood === 'random' ? allVideos : MOODS[mood].videos;
+      return MOODS[mood].videos;
     }
 
     function playNext() {
