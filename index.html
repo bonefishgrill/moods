@@ -278,7 +278,8 @@
           onReady: () => { playerReady = true; },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.ENDED) playNext();
-          }
+          },
+          onError: () => playNext()
         }
       });
     };
