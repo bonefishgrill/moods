@@ -307,9 +307,8 @@
 
     function playNext() {
       if (!currentMood) return;
-      const videoId = pickRandom(getPool(currentMood), lastVideo);
+      const videoId = nextFromQueue();
       if (!videoId) return;
-      lastVideo = videoId;
       player.loadVideoById(videoId);
       armStall();
     }
@@ -329,18 +328,31 @@
       }
     }
 
-    function pickRandom(arr, exclude) {
-      const pool = arr.filter(v => v !== exclude);
-      return pool[Math.floor(Math.random() * pool.length)];
+    let queue = [];
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
     }
 
-    let lastVideo = null;
+    function buildQueue(mood) {
+      queue = shuffle(getPool(mood));
+    }
+
+    function nextFromQueue() {
+      if (queue.length === 0) buildQueue(currentMood);
+      return queue.shift();
+    }
 
     function onMoodClick(mood, btn) {
       currentMood = mood;
-      const videoId = pickRandom(getPool(mood), lastVideo);
+      buildQueue(mood);
+      const videoId = nextFromQueue();
       if (!videoId) return;
-      lastVideo = videoId;
 
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
