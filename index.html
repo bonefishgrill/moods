@@ -349,8 +349,10 @@
     }
 
     function onMoodClick(mood, btn) {
-      currentMood = mood;
-      buildQueue(mood);
+      if (mood !== currentMood) {
+        currentMood = mood;
+        buildQueue(mood);
+      }
       const videoId = nextFromQueue();
       if (!videoId) return;
 
