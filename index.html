@@ -285,8 +285,9 @@
     fetch('https://api.counterapi.dev/v1/moods-computer/visits/up')
       .then(r => r.json())
       .then(d => {
+        const n = d.count + 696;
         document.getElementById('visitCount').textContent =
-          String(d.count).padStart(6, '0');
+          'visitor count ' + String(n).padStart(6, '0');
       })
       .catch(() => {});
 
