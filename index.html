@@ -11,6 +11,13 @@
   <meta property="og:type" content="website"/>
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:image" content="https://bonefishgrill.github.io/moods/preview.png"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-29J084FW6C"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-29J084FW6C');
+  </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -329,6 +336,7 @@
     }
 
     let queue = [];
+    let recentlyPlayed = [];
 
     function shuffle(arr) {
       const a = [...arr];
@@ -340,17 +348,29 @@
     }
 
     function buildQueue(mood) {
-      queue = shuffle(getPool(mood));
+      const pool = getPool(mood);
+      const recent = new Set(recentlyPlayed);
+      const shuffled = shuffle(pool);
+      // Put recently-played videos at the back so they don't recur immediately
+      const front = shuffled.filter(id => !recent.has(id));
+      const back  = shuffled.filter(id =>  recent.has(id));
+      queue = [...front, ...back];
     }
 
     function nextFromQueue() {
       if (queue.length === 0) buildQueue(currentMood);
-      return queue.shift();
+      const id = queue.shift();
+      recentlyPlayed.push(id);
+      // Keep history to ~25% of the current pool size, minimum 3
+      const limit = Math.max(3, Math.ceil(getPool(currentMood).length * 0.25));
+      if (recentlyPlayed.length > limit) recentlyPlayed.shift();
+      return id;
     }
 
     function onMoodClick(mood, btn) {
       if (mood !== currentMood) {
         currentMood = mood;
+        recentlyPlayed = [];
         buildQueue(mood);
       }
       const videoId = nextFromQueue();
