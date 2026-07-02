@@ -210,22 +210,13 @@
       background: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%);
       background-size: 2px 2px;
     }
-    /* ── Footer credit ── */
-    .site-credit {
-      margin-top: 16px;
-      font-family: 'VT323', 'Monaco', monospace;
-      font-size: 13px;
-      color: rgba(0,0,0,0.35);
-      letter-spacing: 0.05em;
-    }
-
-    .site-credit a {
-      color: rgba(0,0,0,0.35);
+    #hint a {
+      color: var(--black);
       text-decoration: none;
     }
 
-    .site-credit a:hover {
-      color: var(--black);
+    #hint a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -255,14 +246,12 @@
       </div>
 
       <div class="status-bar">
-        <span id="hint">Select a mood to begin</span>
+        <span id="hint"><a href="https://ben-schechter.com">created by ben schechter</a></span>
         <span id="clock"></span>
       </div>
 
     </div>
   </div>
-
-  <p class="site-credit"><a href="https://ben-schechter.com">created by ben schechter</a></p>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
@@ -398,7 +387,7 @@
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      document.getElementById('hint').textContent = 'Playing: ' + mood.toUpperCase();
+      document.getElementById('hint').textContent = 'playing: ' + mood.toUpperCase();
       document.getElementById('playerTitle').textContent = mood.toUpperCase();
       document.getElementById('playerWrap').classList.add('visible');
 
@@ -409,7 +398,7 @@
     document.getElementById('playerClose').addEventListener('click', () => {
       document.getElementById('playerWrap').classList.remove('visible');
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
-      document.getElementById('hint').textContent = 'Select a mood to begin';
+      document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a>';
       if (player && player.stopVideo) player.stopVideo();
     });
   </script>
