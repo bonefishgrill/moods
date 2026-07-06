@@ -184,7 +184,7 @@
   },
   "maze": {
     "label": "I want to get lost in a maze without beginning or end",
-    "videos": []
+    "sources": ["well", "still"]
   },
   "toomuch": {
     "label": "Uh oh I took too much of that",
