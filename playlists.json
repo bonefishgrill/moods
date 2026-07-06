@@ -182,6 +182,10 @@
       "H1Yqbex8fJI"
     ]
   },
+  "curl": {
+    "label": "I want to curl up and escape from the cruel world with someone I love",
+    "videos": []
+  },
   "maze": {
     "label": "I want to get lost in a maze without beginning or end",
     "sources": ["well", "still"]
