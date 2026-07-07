@@ -309,6 +309,24 @@
     updateClock();
     setInterval(updateClock, 1000);
 
+    // Screen wake lock — keeps phone screen on while playing
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
+      }
+    }
+
+    function releaseWakeLock() {
+      if (wakeLock) { wakeLock.release(); wakeLock = null; }
+    }
+
+    // Re-acquire wake lock if page becomes visible again while playing
+    document.addEventListener('visibilitychange', () => {
+      if (currentMood && document.visibilityState === 'visible') requestWakeLock();
+    });
+
     let player = null;
     let playerReady = false;
     let currentMood = null;
@@ -422,6 +440,7 @@
       document.getElementById('playerTitle').textContent = mood.toUpperCase();
       document.getElementById('playerWrap').classList.add('visible');
 
+      requestWakeLock();
       loadPlayer(videoId);
     }
 
@@ -431,6 +450,7 @@
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a>';
       if (player && player.stopVideo) player.stopVideo();
+      releaseWakeLock();
     });
   </script>
 </body>
