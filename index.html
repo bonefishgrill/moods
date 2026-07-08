@@ -317,6 +317,7 @@
           btn.addEventListener('click', () => onMoodClick(mood, btn));
           container.appendChild(btn);
         });
+        tryPrime();
       });
 
     // Visitor counter
@@ -398,20 +399,36 @@
       }, 5000);
     }
 
+    // Warm up the player with a muted placeholder as soon as it's ready, so
+    // by the time the user clicks a mood, YouTube is already actively
+    // playing (invisibly, muted) — a click then only has to unMute() and
+    // swap videos, which is always allowed, instead of cold-starting
+    // playback outside the user gesture (which Chrome can block).
+    let primed = false;
+    function tryPrime() {
+      if (primed || !playerReady) return;
+      const pool = Object.values(MOODS).flatMap(m => m.videos || []);
+      if (!pool.length) return;
+      primed = true;
+      player.mute();
+      player.loadVideoById(pool[Math.floor(Math.random() * pool.length)]);
+    }
+
     window.onYouTubeIframeAPIReady = function() {
       player = new YT.Player('player', {
         height: '100%',
         width: '100%',
         playerVars: { controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
-          onReady: () => { playerReady = true; },
+          onReady: () => { playerReady = true; tryPrime(); },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.ENDED) { clearStall(); playNext(); }
             else if (e.data === YT.PlayerState.PLAYING) { clearStall(); showPlayer(); hideLoading(); }
           },
           onError: () => {
-            if (currentVideoId) blockedVideos.add(currentVideoId);
-            clearStall(); playNext();
+            if (currentMood && currentVideoId) blockedVideos.add(currentVideoId);
+            clearStall();
+            if (currentMood) { playNext(); } else { primed = false; tryPrime(); }
           }
         }
       });
@@ -511,6 +528,7 @@
       positionPlayer(btn);
       showPlayer();
 
+      if (player && player.unMute) player.unMute();
       requestWakeLock();
       loadPlayer(videoId);
     }
