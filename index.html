@@ -341,6 +341,7 @@
     let playerReady = false;
     let currentMood = null;
     let stallTimer = null;
+    let lastLoadTime = 0;
 
     function clearStall() {
       if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
@@ -368,7 +369,11 @@
             if (e.data === YT.PlayerState.ENDED) { clearStall(); playNext(); }
             else if (e.data === YT.PlayerState.PLAYING) clearStall();
           },
-          onError: () => { clearStall(); playNext(); }
+          onError: () => {
+            // Ignore errors within 2s of loading — these are iframe init noise
+            if (Date.now() - lastLoadTime < 2000) return;
+            clearStall(); playNext();
+          }
         }
       });
     };
@@ -388,6 +393,7 @@
     }
 
     function loadPlayer(videoId) {
+      lastLoadTime = Date.now();
       if (playerReady) {
         player.loadVideoById(videoId);
         armStall();
@@ -395,6 +401,7 @@
         const interval = setInterval(() => {
           if (playerReady) {
             clearInterval(interval);
+            lastLoadTime = Date.now();
             player.loadVideoById(videoId);
             armStall();
           }
