@@ -231,6 +231,16 @@
       color: var(--black);
       letter-spacing: 0.1em;
     }
+
+    /* Player spans both grid columns when inside the buttons grid */
+    .player-window { grid-column: 1 / -1; }
+
+    @media (max-width: 600px) {
+      body { padding-top: 12px; padding-bottom: 20px; }
+      .window { margin-top: 8px; }
+      .window-content { padding: 10px; gap: 8px; }
+      button { font-size: 14px; padding: 10px 8px 8px; line-height: 1.2; }
+    }
   </style>
 </head>
 <body>
@@ -424,6 +434,16 @@
       return id;
     }
 
+    function positionPlayer(btn) {
+      const playerWrap = document.getElementById('playerWrap');
+      const buttonsEl = document.getElementById('buttons');
+      const btns = Array.from(buttonsEl.querySelectorAll('[data-mood]'));
+      const idx = btns.indexOf(btn);
+      const rowEnd = (idx % 2 === 0 && btns[idx + 1]) ? btns[idx + 1] : btn;
+      rowEnd.insertAdjacentElement('afterend', playerWrap);
+      playerWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     function onMoodClick(mood, btn) {
       if (mood !== currentMood) {
         currentMood = mood;
@@ -438,19 +458,25 @@
 
       document.getElementById('hint').textContent = 'playing: ' + mood.toUpperCase();
       document.getElementById('playerTitle').textContent = mood.toUpperCase();
+
+      positionPlayer(btn);
       document.getElementById('playerWrap').classList.add('visible');
 
       requestWakeLock();
       loadPlayer(videoId);
     }
 
-    // Close button hides player
+    // Close button hides player and returns it to its original position
     document.getElementById('playerClose').addEventListener('click', () => {
-      document.getElementById('playerWrap').classList.remove('visible');
+      const playerWrap = document.getElementById('playerWrap');
+      const buttonsEl = document.getElementById('buttons');
+      playerWrap.classList.remove('visible');
+      buttonsEl.insertAdjacentElement('afterend', playerWrap);
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a>';
       if (player && player.stopVideo) player.stopVideo();
       releaseWakeLock();
+      currentMood = null;
     });
   </script>
 </body>
