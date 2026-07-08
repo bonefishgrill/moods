@@ -194,13 +194,23 @@
       position: relative;
     }
 
-    #player {
+    /* One hidden, muted player per mood, pre-buffering a candidate video so
+       clicking a mood can reveal an already-playing iframe instead of
+       loading one from scratch. Only the active mood's slot is visible. */
+    .mood-slot {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .mood-slot.active { opacity: 1; pointer-events: auto; z-index: 1; }
+    .mood-slot iframe {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
     }
 
-    /* Covers the iframe while a video is loading, so YouTube's transient
+    /* Covers the active slot while it's loading, so YouTube's transient
        init error/placeholder is never visible */
     .player-loading {
       position: absolute;
@@ -281,7 +291,6 @@
             <span class="player-title-text" id="playerTitle">Now Playing</span>
           </div>
           <div class="player-wrap">
-            <div id="player"></div>
             <div class="player-loading" id="playerLoading"></div>
           </div>
         </div>
@@ -304,6 +313,7 @@
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     let MOODS = {};
+    let ytApiReady = false;
 
     fetch('playlists.json')
       .then(r => r.json())
@@ -317,7 +327,7 @@
           btn.addEventListener('click', () => onMoodClick(mood, btn));
           container.appendChild(btn);
         });
-        tryPrime();
+        maybeCreatePlayers();
       });
 
     // Visitor counter
@@ -357,11 +367,17 @@
       if (currentMood && document.visibilityState === 'visible') requestWakeLock();
     });
 
-    let player = null;
-    let playerReady = false;
+    // One hidden, muted YT.Player per mood. Each pre-buffers a candidate
+    // video the moment it's ready, so clicking a mood can reveal an
+    // already-playing iframe (instant) instead of loading one from scratch.
     let currentMood = null;
-    let stallTimer = null;
-    let currentVideoId = null;
+    const players = {};            // mood -> YT.Player
+    const playerReady = {};        // mood -> bool
+    const preloadReady = {};       // mood -> bool (buffered & paused, ready to reveal instantly)
+    const currentVideoIdByMood = {};
+    const stallTimers = {};        // mood -> timer id
+    const queueByMood = {};
+    const recentByMood = {};
     const blockedVideos = new Set();
 
     function hidePlayer() {
@@ -384,92 +400,28 @@
       document.getElementById('playerLoading').classList.add('hidden');
     }
 
-    function clearStall() {
-      if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+    function clearStall(mood) {
+      if (stallTimers[mood]) { clearTimeout(stallTimers[mood]); stallTimers[mood] = null; }
     }
 
-    function armStall() {
-      clearStall();
-      stallTimer = setTimeout(() => {
-        // If still unstarted or cued after 5s, the video is blocked — skip it
-        const state = player && player.getPlayerState();
+    function armStall(mood) {
+      clearStall(mood);
+      stallTimers[mood] = setTimeout(() => {
+        // If still unstarted or cued after 5s, the video is blocked — skip/retry it
+        const p = players[mood];
+        const state = p && p.getPlayerState();
         if (state === YT.PlayerState.UNSTARTED || state === YT.PlayerState.CUED || state === -1) {
-          playNext();
+          if (mood === currentMood) playNextInMood(mood);
+          else { preloadReady[mood] = false; primeMood(mood); }
         }
       }, 5000);
     }
-
-    // Warm up the player with a muted placeholder as soon as it's ready, so
-    // by the time the user clicks a mood, YouTube is already actively
-    // playing (invisibly, muted) — a click then only has to unMute() and
-    // swap videos, which is always allowed, instead of cold-starting
-    // playback outside the user gesture (which Chrome can block).
-    let primed = false;
-    function tryPrime() {
-      if (primed || !playerReady) return;
-      const pool = Object.values(MOODS).flatMap(m => m.videos || []);
-      if (!pool.length) return;
-      primed = true;
-      player.mute();
-      player.loadVideoById(pool[Math.floor(Math.random() * pool.length)]);
-    }
-
-    window.onYouTubeIframeAPIReady = function() {
-      player = new YT.Player('player', {
-        height: '100%',
-        width: '100%',
-        playerVars: { controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
-        events: {
-          onReady: () => { playerReady = true; tryPrime(); },
-          onStateChange: (e) => {
-            if (e.data === YT.PlayerState.ENDED) { clearStall(); playNext(); }
-            else if (e.data === YT.PlayerState.PLAYING) { clearStall(); showPlayer(); hideLoading(); }
-          },
-          onError: () => {
-            if (currentMood && currentVideoId) blockedVideos.add(currentVideoId);
-            clearStall();
-            if (currentMood) { playNext(); } else { primed = false; tryPrime(); }
-          }
-        }
-      });
-    };
 
     function getPool(mood) {
       const m = MOODS[mood];
       const all = m.sources ? m.sources.flatMap(s => MOODS[s].videos) : m.videos;
       return all.filter(id => !blockedVideos.has(id));
     }
-
-    function playNext() {
-      if (!currentMood) return;
-      const videoId = nextFromQueue();
-      if (!videoId) return;
-      showLoading();
-      currentVideoId = videoId;
-      player.loadVideoById(videoId);
-      armStall();
-    }
-
-    function loadPlayer(videoId) {
-      showLoading();
-      currentVideoId = videoId;
-      if (playerReady) {
-        player.loadVideoById(videoId);
-        armStall();
-      } else {
-        const interval = setInterval(() => {
-          if (playerReady) {
-            clearInterval(interval);
-            currentVideoId = videoId;
-            player.loadVideoById(videoId);
-            armStall();
-          }
-        }, 100);
-      }
-    }
-
-    let queue = [];
-    let recentlyPlayed = [];
 
     function shuffle(arr) {
       const a = [...arr];
@@ -482,23 +434,93 @@
 
     function buildQueue(mood) {
       const pool = getPool(mood);
-      const recent = new Set(recentlyPlayed);
+      const recent = new Set(recentByMood[mood] || []);
       const shuffled = shuffle(pool);
       // Put recently-played videos at the back so they don't recur immediately
       const front = shuffled.filter(id => !recent.has(id));
       const back  = shuffled.filter(id =>  recent.has(id));
-      queue = [...front, ...back];
+      queueByMood[mood] = [...front, ...back];
     }
 
-    function nextFromQueue() {
-      if (queue.length === 0) buildQueue(currentMood);
-      const id = queue.shift();
-      recentlyPlayed.push(id);
+    function nextFromQueue(mood) {
+      if (!queueByMood[mood] || queueByMood[mood].length === 0) buildQueue(mood);
+      const id = queueByMood[mood].shift();
+      if (!id) return id;
+      const recent = recentByMood[mood] || (recentByMood[mood] = []);
+      recent.push(id);
       // Keep history to ~25% of the current pool size, minimum 3
-      const limit = Math.max(3, Math.ceil(getPool(currentMood).length * 0.25));
-      if (recentlyPlayed.length > limit) recentlyPlayed.shift();
+      const limit = Math.max(3, Math.ceil(getPool(mood).length * 0.25));
+      if (recent.length > limit) recent.shift();
       return id;
     }
+
+    // Picks a fresh candidate for this mood and starts it muted in the
+    // background. Once it reaches PLAYING it gets paused immediately,
+    // leaving it primed and ready for an instant, click-triggered resume.
+    function primeMood(mood) {
+      if (!playerReady[mood] || preloadReady[mood]) return;
+      const videoId = nextFromQueue(mood);
+      if (!videoId) return;
+      currentVideoIdByMood[mood] = videoId;
+      players[mood].mute();
+      players[mood].loadVideoById(videoId);
+      armStall(mood);
+    }
+
+    function playNextInMood(mood) {
+      if (mood !== currentMood) return;
+      const videoId = nextFromQueue(mood);
+      if (!videoId) return;
+      showLoading();
+      currentVideoIdByMood[mood] = videoId;
+      players[mood].loadVideoById(videoId);
+      armStall(mood);
+    }
+
+    function createMoodPlayer(mood) {
+      const wrap = document.querySelector('.player-wrap');
+      const slot = document.createElement('div');
+      slot.className = 'mood-slot';
+      slot.id = 'slot-' + mood;
+      const target = document.createElement('div');
+      target.id = 'yt-' + mood;
+      slot.appendChild(target);
+      wrap.insertBefore(slot, document.getElementById('playerLoading'));
+
+      players[mood] = new YT.Player(target.id, {
+        height: '100%',
+        width: '100%',
+        playerVars: { controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
+        events: {
+          onReady: () => { playerReady[mood] = true; primeMood(mood); },
+          onStateChange: (e) => {
+            if (e.data === YT.PlayerState.PLAYING) {
+              if (mood === currentMood) { clearStall(mood); showPlayer(); hideLoading(); }
+              else { players[mood].pauseVideo(); preloadReady[mood] = true; }
+            } else if (e.data === YT.PlayerState.ENDED && mood === currentMood) {
+              clearStall(mood); playNextInMood(mood);
+            }
+          },
+          onError: () => {
+            if (currentVideoIdByMood[mood]) blockedVideos.add(currentVideoIdByMood[mood]);
+            clearStall(mood);
+            if (mood === currentMood) { playNextInMood(mood); }
+            else { preloadReady[mood] = false; primeMood(mood); }
+          }
+        }
+      });
+    }
+
+    function maybeCreatePlayers() {
+      if (!ytApiReady || Object.keys(MOODS).length === 0) return;
+      // Stagger creation slightly so 12 embeds don't all hit the network at once
+      Object.keys(MOODS).forEach((mood, i) => setTimeout(() => createMoodPlayer(mood), i * 250));
+    }
+
+    window.onYouTubeIframeAPIReady = function() {
+      ytApiReady = true;
+      maybeCreatePlayers();
+    };
 
     function positionPlayer(btn) {
       const playerWrap = document.getElementById('playerWrap');
@@ -511,26 +533,65 @@
     }
 
     function onMoodClick(mood, btn) {
-      if (mood !== currentMood) {
-        currentMood = mood;
-        recentlyPlayed = [];
-        buildQueue(mood);
-      }
-      const videoId = nextFromQueue();
-      if (!videoId) return;
-
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
       document.getElementById('hint').textContent = 'playing: ' + mood.toUpperCase();
       document.getElementById('playerTitle').textContent = mood.toUpperCase();
-
       positionPlayer(btn);
-      showPlayer();
-
-      if (player && player.unMute) player.unMute();
       requestWakeLock();
-      loadPlayer(videoId);
+
+      if (mood === currentMood) {
+        // Re-clicking the active mood skips to the next video in its queue
+        showLoading();
+        playNextInMood(mood);
+        return;
+      }
+
+      // Leaving a previous mood — hide/mute it and re-arm its preload for later
+      if (currentMood) {
+        const prev = currentMood;
+        clearStall(prev);
+        const prevSlot = document.getElementById('slot-' + prev);
+        if (prevSlot) prevSlot.classList.remove('active');
+        if (players[prev]) players[prev].mute();
+        preloadReady[prev] = false;
+        setTimeout(() => primeMood(prev), 0);
+      }
+
+      currentMood = mood;
+      showPlayer();
+      const slot = document.getElementById('slot-' + mood);
+      if (slot) slot.classList.add('active');
+
+      const p = players[mood];
+      if (!p || !playerReady[mood]) {
+        // This mood's player hasn't initialized yet — wait, then start it
+        showLoading();
+        const interval = setInterval(() => {
+          if (playerReady[mood]) {
+            clearInterval(interval);
+            players[mood].unMute();
+            const videoId = nextFromQueue(mood);
+            currentVideoIdByMood[mood] = videoId;
+            players[mood].loadVideoById(videoId);
+            armStall(mood);
+          }
+        }, 100);
+        return;
+      }
+
+      showLoading();
+      p.unMute();
+      if (preloadReady[mood]) {
+        p.playVideo(); // already buffered & paused — resumes instantly
+      } else if (!currentVideoIdByMood[mood]) {
+        // Never primed (e.g. pool was empty at page load) — load fresh now
+        const videoId = nextFromQueue(mood);
+        currentVideoIdByMood[mood] = videoId;
+        p.loadVideoById(videoId);
+      }
+      // else: still buffering its primed candidate — unmute is enough, let it arrive
+      armStall(mood);
     }
 
     // Close button hides player — no DOM move so the iframe doesn't reload
@@ -538,9 +599,17 @@
       hidePlayer();
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a>';
-      if (player && player.stopVideo) player.stopVideo();
+      if (currentMood) {
+        const prev = currentMood;
+        clearStall(prev);
+        if (players[prev]) { players[prev].stopVideo(); players[prev].mute(); }
+        const prevSlot = document.getElementById('slot-' + prev);
+        if (prevSlot) prevSlot.classList.remove('active');
+        preloadReady[prev] = false;
+        currentMood = null;
+        setTimeout(() => primeMood(prev), 0);
+      }
       releaseWakeLock();
-      currentMood = null;
     });
   </script>
 </body>
