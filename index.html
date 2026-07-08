@@ -527,8 +527,10 @@
 
     function maybeCreatePlayers() {
       if (!ytApiReady || Object.keys(MOODS).length === 0) return;
-      // Stagger creation slightly so 12 embeds don't all hit the network at once
-      Object.keys(MOODS).forEach((mood, i) => setTimeout(() => createMoodPlayer(mood), i * 250));
+      // All at once — a user can click within a couple seconds of the page
+      // loading, so every mood needs to start buffering immediately to have
+      // any chance of being ready by then.
+      Object.keys(MOODS).forEach(createMoodPlayer);
     }
 
     window.onYouTubeIframeAPIReady = function() {
