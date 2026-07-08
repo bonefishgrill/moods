@@ -370,10 +370,16 @@
       if (currentMood) document.getElementById('playerWrap').classList.add('show');
     }
 
+    let loadingTimer = null;
     function showLoading() {
       document.getElementById('playerLoading').classList.remove('hidden');
+      clearTimeout(loadingTimer);
+      // Safety net: never let the overlay get stuck if PLAYING never fires
+      // (e.g. autoplay blocked and the video needs a manual click)
+      loadingTimer = setTimeout(hideLoading, 2500);
     }
     function hideLoading() {
+      clearTimeout(loadingTimer);
       document.getElementById('playerLoading').classList.add('hidden');
     }
 
