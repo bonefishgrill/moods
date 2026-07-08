@@ -281,21 +281,16 @@
       "YxNio8GvwRY",
       "9EhIBv_qAlI",
       "QUMuDWDVd20",
-      "lOvfctgwnug"
-    ]
-  },
-  "maze": {
-    "label": "I want to get lost in a maze without beginning or end",
-    "sources": ["well", "still"]
-  },
-  "hide": {
-    "label": "I need to hide from the world",
-    "videos": [
+      "lOvfctgwnug",
       "ng8PyQwztbE",
       "_Ew9B3oNHJk",
       "5Ev68XXZo6w",
       "9GNziJYbGPU"
     ]
+  },
+  "maze": {
+    "label": "I want to get lost in a maze without beginning or end",
+    "sources": ["well", "still"]
   },
   "toomuch": {
     "label": "Uh oh I took too much of that",
