@@ -255,16 +255,16 @@
 
     <div class="window-content">
 
-      <div class="buttons" id="buttons"></div>
-
-      <!-- Player as its own Mac window -->
-      <div class="player-window" id="playerWrap">
-        <div class="player-title-bar">
-          <div class="close-box" id="playerClose"></div>
-          <span class="player-title-text" id="playerTitle">Now Playing</span>
-        </div>
-        <div class="player-wrap">
-          <div id="player"></div>
+      <div class="buttons" id="buttons">
+        <!-- Player lives inside the grid so repositioning never crosses parents (avoids iframe reload) -->
+        <div class="player-window" id="playerWrap">
+          <div class="player-title-bar">
+            <div class="close-box" id="playerClose"></div>
+            <span class="player-title-text" id="playerTitle">Now Playing</span>
+          </div>
+          <div class="player-wrap">
+            <div id="player"></div>
+          </div>
         </div>
       </div>
 
@@ -466,12 +466,9 @@
       loadPlayer(videoId);
     }
 
-    // Close button hides player and returns it to its original position
+    // Close button hides player — no DOM move so the iframe doesn't reload
     document.getElementById('playerClose').addEventListener('click', () => {
-      const playerWrap = document.getElementById('playerWrap');
-      const buttonsEl = document.getElementById('buttons');
-      playerWrap.classList.remove('visible');
-      buttonsEl.insertAdjacentElement('afterend', playerWrap);
+      document.getElementById('playerWrap').classList.remove('visible');
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a>';
       if (player && player.stopVideo) player.stopVideo();
