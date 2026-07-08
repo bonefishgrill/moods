@@ -342,6 +342,8 @@
     let currentMood = null;
     let stallTimer = null;
     let lastLoadTime = 0;
+    let currentVideoId = null;
+    const blockedVideos = new Set();
 
     function clearStall() {
       if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
@@ -370,8 +372,8 @@
             else if (e.data === YT.PlayerState.PLAYING) clearStall();
           },
           onError: () => {
-            // Ignore errors within 2s of loading — these are iframe init noise
             if (Date.now() - lastLoadTime < 2000) return;
+            if (currentVideoId) blockedVideos.add(currentVideoId);
             clearStall(); playNext();
           }
         }
@@ -380,19 +382,22 @@
 
     function getPool(mood) {
       const m = MOODS[mood];
-      if (m.sources) return m.sources.flatMap(s => MOODS[s].videos);
-      return m.videos;
+      const all = m.sources ? m.sources.flatMap(s => MOODS[s].videos) : m.videos;
+      return all.filter(id => !blockedVideos.has(id));
     }
 
     function playNext() {
       if (!currentMood) return;
       const videoId = nextFromQueue();
       if (!videoId) return;
+      currentVideoId = videoId;
+      lastLoadTime = Date.now();
       player.loadVideoById(videoId);
       armStall();
     }
 
     function loadPlayer(videoId) {
+      currentVideoId = videoId;
       lastLoadTime = Date.now();
       if (playerReady) {
         player.loadVideoById(videoId);
@@ -401,6 +406,7 @@
         const interval = setInterval(() => {
           if (playerReady) {
             clearInterval(interval);
+            currentVideoId = videoId;
             lastLoadTime = Date.now();
             player.loadVideoById(videoId);
             armStall();
