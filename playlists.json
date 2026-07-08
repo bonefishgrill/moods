@@ -33,7 +33,12 @@
       "1uLVZfxoRyM",
       "RQ3aIgcyAYY",
       "5weCvYhkl8g",
-      "IM6Hewu80qs"
+      "IM6Hewu80qs",
+      "1NYf85B7ALU",
+      "_Ew9B3oNHJk",
+      "QEKrXgnxaDY",
+      "piuAR9VT7hc",
+      "4oQt49NReEM"
     ]
   },
   "boost": {
@@ -79,7 +84,13 @@
       "p7oBKEiOgEw",
       "RQ3aIgcyAYY",
       "H89tZFKIlSo",
-      "aH7Z9UF5UFs"
+      "aH7Z9UF5UFs",
+      "S1JbcQ5wAiU",
+      "1NYf85B7ALU",
+      "_Ew9B3oNHJk",
+      "QEKrXgnxaDY",
+      "piuAR9VT7hc",
+      "4oQt49NReEM"
     ]
   },
   "still": {
@@ -123,7 +134,11 @@
       "OxIlV2iOCyc",
       "PV5xmINm85o",
       "D3nG9BbzH3I",
-      "5weCvYhkl8g"
+      "5weCvYhkl8g",
+      "3nwxsYylscQ",
+      "9GNziJYbGPU",
+      "Lg5MVF_mcR4",
+      "WkZzz5sdSf4"
     ]
   },
   "empty": {
@@ -150,7 +165,10 @@
       "QIdimVDuSEU",
       "tUYG_pTjMBQ",
       "5weCvYhkl8g",
-      "IM6Hewu80qs"
+      "IM6Hewu80qs",
+      "1NYf85B7ALU",
+      "_Ew9B3oNHJk",
+      "9BzpBtpcgIs"
     ]
   },
   "well": {
@@ -183,7 +201,11 @@
       "_24buRDk4jM",
       "LIxbx0rfJy8",
       "D3nG9BbzH3I",
-      "5weCvYhkl8g"
+      "5weCvYhkl8g",
+      "9Z_DrX_7Wb4",
+      "weAXPHv8GSM",
+      "5Ev68XXZo6w",
+      "9GNziJYbGPU"
     ]
   },
   "nothing": {
@@ -201,7 +223,12 @@
       "S16pPTtR0As",
       "_24buRDk4jM",
       "dp_uq5mHOD8",
-      "ggKZ8ikkHHQ"
+      "ggKZ8ikkHHQ",
+      "Sf0YXDnINy0",
+      "weAXPHv8GSM",
+      "2HjAdIOTTho",
+      "9GNziJYbGPU",
+      "WkZzz5sdSf4"
     ]
   },
   "kids": {
@@ -223,7 +250,10 @@
       "tkPoOvVnbRk",
       "AED0hMLW5dE",
       "H1Yqbex8fJI",
-      "2jAAusy1DYo"
+      "2jAAusy1DYo",
+      "1NYf85B7ALU",
+      "piuAR9VT7hc",
+      "3nwxsYylscQ"
     ]
   },
   "close": {
@@ -237,7 +267,11 @@
       "2jAAusy1DYo",
       "w82WpAd1xsU",
       "rBBT6ls3cd4",
-      "3Tq5fV9poJo"
+      "3Tq5fV9poJo",
+      "S1JbcQ5wAiU",
+      "J21P-0qTo0o",
+      "rXpZ2811ZLU",
+      "Lg5MVF_mcR4"
     ]
   },
   "curl": {
@@ -253,6 +287,15 @@
   "maze": {
     "label": "I want to get lost in a maze without beginning or end",
     "sources": ["well", "still"]
+  },
+  "hide": {
+    "label": "I need to hide from the world",
+    "videos": [
+      "ng8PyQwztbE",
+      "_Ew9B3oNHJk",
+      "5Ev68XXZo6w",
+      "9GNziJYbGPU"
+    ]
   },
   "toomuch": {
     "label": "Uh oh I took too much of that",
@@ -277,7 +320,12 @@
       "_24buRDk4jM",
       "LIxbx0rfJy8",
       "D3nG9BbzH3I",
-      "5weCvYhkl8g"
+      "5weCvYhkl8g",
+      "Sf0YXDnINy0",
+      "9Z_DrX_7Wb4",
+      "9GNziJYbGPU",
+      "Lg5MVF_mcR4",
+      "WkZzz5sdSf4"
     ]
   },
   "random": {
