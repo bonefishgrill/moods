@@ -595,17 +595,22 @@
         return;
       }
 
-      showLoading();
       p.unMute();
       if (preloadReady[mood]) {
-        p.playVideo(); // already buffered & paused — resumes instantly
-      } else if (!currentVideoIdByMood[mood]) {
-        // Never primed (e.g. pool was empty at page load) — load fresh now
-        const videoId = nextFromQueue(mood);
-        currentVideoIdByMood[mood] = videoId;
-        p.loadVideoById(videoId);
+        // Already playing in the background — nothing to mask, and unMute()
+        // alone never re-fires a PLAYING state change to clear the overlay.
+        hideLoading();
+        p.playVideo(); // harmless no-op, already playing
+      } else {
+        showLoading();
+        if (!currentVideoIdByMood[mood]) {
+          // Never primed (e.g. pool was empty at page load) — load fresh now
+          const videoId = nextFromQueue(mood);
+          currentVideoIdByMood[mood] = videoId;
+          p.loadVideoById(videoId);
+        }
+        // else: still buffering its primed candidate — unmute is enough, let it arrive
       }
-      // else: still buffering its primed candidate — unmute is enough, let it arrive
       armStall(mood);
     }
 
