@@ -341,9 +341,15 @@
     let playerReady = false;
     let currentMood = null;
     let stallTimer = null;
-    let lastLoadTime = 0;
     let currentVideoId = null;
     const blockedVideos = new Set();
+
+    function hidePlayer() {
+      document.getElementById('playerWrap').classList.remove('visible');
+    }
+    function showPlayer() {
+      if (currentMood) document.getElementById('playerWrap').classList.add('visible');
+    }
 
     function clearStall() {
       if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
@@ -369,10 +375,10 @@
           onReady: () => { playerReady = true; },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.ENDED) { clearStall(); playNext(); }
-            else if (e.data === YT.PlayerState.PLAYING) clearStall();
+            else if (e.data === YT.PlayerState.PLAYING) { clearStall(); showPlayer(); }
           },
           onError: () => {
-            if (Date.now() - lastLoadTime < 2000) return;
+            hidePlayer(); // hide error screen instantly
             if (currentVideoId) blockedVideos.add(currentVideoId);
             clearStall(); playNext();
           }
@@ -391,14 +397,12 @@
       const videoId = nextFromQueue();
       if (!videoId) return;
       currentVideoId = videoId;
-      lastLoadTime = Date.now();
       player.loadVideoById(videoId);
       armStall();
     }
 
     function loadPlayer(videoId) {
       currentVideoId = videoId;
-      lastLoadTime = Date.now();
       if (playerReady) {
         player.loadVideoById(videoId);
         armStall();
@@ -407,7 +411,6 @@
           if (playerReady) {
             clearInterval(interval);
             currentVideoId = videoId;
-            lastLoadTime = Date.now();
             player.loadVideoById(videoId);
             armStall();
           }
@@ -473,7 +476,7 @@
       document.getElementById('playerTitle').textContent = mood.toUpperCase();
 
       positionPlayer(btn);
-      document.getElementById('playerWrap').classList.add('visible');
+      // Player stays hidden until video actually starts playing (prevents error flash)
 
       requestWakeLock();
       loadPlayer(videoId);
