@@ -377,6 +377,7 @@
     const currentVideoIdByMood = {};
     const stallTimers = {};        // mood -> timer id
     const refreshTimers = {};      // mood -> timer id, bounds background drift
+    const cushionTimers = {};      // mood -> timer id, delay before pausing a buffered candidate
     const queueByMood = {};
     const recentByMood = {};
     const blockedVideos = new Set();
@@ -462,11 +463,12 @@
     }
 
     // Picks a fresh candidate for this mood and starts it muted in the
-    // background. Once it reaches PLAYING it gets paused immediately,
-    // leaving it primed and ready for an instant, click-triggered resume.
+    // background. Once it's built a buffer cushion it gets paused, leaving
+    // it primed and ready for an instant, click-triggered resume.
     function primeMood(mood) {
       if (!playerReady[mood] || preloadReady[mood]) return;
       clearTimeout(refreshTimers[mood]);
+      clearTimeout(cushionTimers[mood]);
       const videoId = nextFromQueue(mood);
       if (!videoId) return;
       currentVideoIdByMood[mood] = videoId;
@@ -504,18 +506,27 @@
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.PLAYING) {
               if (mood === currentMood) { clearStall(mood); showPlayer(); hideLoading(); }
-              else {
-                // Keep it playing muted (never pause) — pausing right after
-                // the first PLAYING event only had a sliver of buffer, and
-                // resuming from that can still trigger a real rebuffer.
-                // Refresh the candidate periodically so position doesn't
-                // drift too far from the start while it sits unused.
+              else if (!preloadReady[mood]) {
+                // Let it keep playing/buffering a couple more seconds to build
+                // a real cushion — pausing right at the first PLAYING event
+                // only had a sliver of buffer and could still stall on
+                // resume. Once it has a cushion, pause it so it stops
+                // competing for bandwidth with whichever mood is actually
+                // playing (or with the other 10 candidates still buffering).
                 clearStall(mood);
-                preloadReady[mood] = true;
-                clearTimeout(refreshTimers[mood]);
-                refreshTimers[mood] = setTimeout(() => {
-                  if (mood !== currentMood) { preloadReady[mood] = false; primeMood(mood); }
-                }, 45000);
+                clearTimeout(cushionTimers[mood]);
+                cushionTimers[mood] = setTimeout(() => {
+                  if (mood === currentMood) return;
+                  if (players[mood].getPlayerState() !== YT.PlayerState.PLAYING) return;
+                  players[mood].pauseVideo();
+                  preloadReady[mood] = true;
+                  // Refresh periodically so position doesn't drift too far
+                  // from the start while it sits unused.
+                  clearTimeout(refreshTimers[mood]);
+                  refreshTimers[mood] = setTimeout(() => {
+                    if (mood !== currentMood) { preloadReady[mood] = false; primeMood(mood); }
+                  }, 45000);
+                }, 2500);
               }
             } else if (e.data === YT.PlayerState.ENDED && mood === currentMood) {
               clearStall(mood); playNextInMood(mood);
@@ -582,6 +593,7 @@
 
       currentMood = mood;
       clearTimeout(refreshTimers[mood]);
+      clearTimeout(cushionTimers[mood]);
       showPlayer();
       const slot = document.getElementById('slot-' + mood);
       if (slot) slot.classList.add('active');
