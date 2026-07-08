@@ -405,17 +405,23 @@
       if (stallTimers[mood]) { clearTimeout(stallTimers[mood]); stallTimers[mood] = null; }
     }
 
-    function armStall(mood) {
+    function armStall(mood, background) {
       clearStall(mood);
+      // Background priming has no urgency and has to compete with up to 11
+      // other videos buffering at once — 5s is plenty for something the
+      // user is actively waiting on, but way too aggressive for a
+      // background candidate, which would otherwise get torn down and
+      // restarted before it ever finishes buffering.
+      const timeout = background ? 20000 : 5000;
       stallTimers[mood] = setTimeout(() => {
-        // If still unstarted or cued after 5s, the video is blocked — skip/retry it
+        // If still unstarted or cued, the video is blocked — skip/retry it
         const p = players[mood];
         const state = p && p.getPlayerState();
         if (state === YT.PlayerState.UNSTARTED || state === YT.PlayerState.CUED || state === -1) {
           if (mood === currentMood) playNextInMood(mood);
           else { preloadReady[mood] = false; primeMood(mood); }
         }
-      }, 5000);
+      }, timeout);
     }
 
     function getPool(mood) {
@@ -466,7 +472,7 @@
       currentVideoIdByMood[mood] = videoId;
       players[mood].mute();
       players[mood].loadVideoById(videoId);
-      armStall(mood);
+      armStall(mood, true);
     }
 
     function playNextInMood(mood) {
