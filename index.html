@@ -534,8 +534,9 @@
 
     function getPool(mood) {
       const m = MOODS[mood];
-      const all = m.sources ? m.sources.flatMap(s => MOODS[s].videos) : m.videos;
-      return all.filter(id => !blockedVideos.has(id));
+      const own = m.videos || [];
+      const sourced = m.sources ? m.sources.flatMap(s => MOODS[s].videos) : [];
+      return [...own, ...sourced].filter(id => !blockedVideos.has(id));
     }
 
     function shuffle(arr) {

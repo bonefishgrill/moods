@@ -1,6 +1,6 @@
 {
   "work": {
-    "label": "I need to work — something quiet and calming",
+    "label": "I need to work \u2014 something quiet and calming",
     "videos": [
       "s--IkNqI9og",
       "Xw5AiRVqfqk",
@@ -38,11 +38,15 @@
       "_Ew9B3oNHJk",
       "QEKrXgnxaDY",
       "piuAR9VT7hc",
-      "4oQt49NReEM"
+      "4oQt49NReEM",
+      "eZxyT1aybsQ",
+      "qfM1Mx9zXe0",
+      "Ko9p_LL-iiM",
+      "kovd7OzcU9s"
     ]
   },
   "boost": {
-    "label": "I need energy — I'm tired and need a boost",
+    "label": "I need energy \u2014 I'm tired and need a boost",
     "videos": [
       "v3aO2jM-66A",
       "kIeP0Z2ymww",
@@ -90,7 +94,20 @@
       "_Ew9B3oNHJk",
       "QEKrXgnxaDY",
       "piuAR9VT7hc",
-      "4oQt49NReEM"
+      "4oQt49NReEM",
+      "HUsA-W1e8MI",
+      "eZxyT1aybsQ",
+      "qfM1Mx9zXe0",
+      "xY4FgpoQdaE",
+      "u2WXVpp2Fnc",
+      "GYsQ3PAdBb4",
+      "TMA09_c91HE",
+      "Ko9p_LL-iiM",
+      "pd-uSm8ittU",
+      "LHiYwnCyCgk",
+      "742s-DXQGPc",
+      "WdSCZiQ86Pc",
+      "uWHsvv0oJPM"
     ]
   },
   "still": {
@@ -138,7 +155,13 @@
       "3nwxsYylscQ",
       "9GNziJYbGPU",
       "Lg5MVF_mcR4",
-      "WkZzz5sdSf4"
+      "WkZzz5sdSf4",
+      "y70YhPHYATY",
+      "Mit3Bw36BYU",
+      "684u3571YWw",
+      "O7LITbKvSOM",
+      "b2tUh5BCEUs",
+      "kovd7OzcU9s"
     ]
   },
   "empty": {
@@ -168,7 +191,12 @@
       "IM6Hewu80qs",
       "1NYf85B7ALU",
       "_Ew9B3oNHJk",
-      "9BzpBtpcgIs"
+      "9BzpBtpcgIs",
+      "HUsA-W1e8MI",
+      "y70YhPHYATY",
+      "-mtTlCSUKXE",
+      "kovd7OzcU9s",
+      "pd-uSm8ittU"
     ]
   },
   "well": {
@@ -205,7 +233,8 @@
       "9Z_DrX_7Wb4",
       "weAXPHv8GSM",
       "5Ev68XXZo6w",
-      "9GNziJYbGPU"
+      "9GNziJYbGPU",
+      "684u3571YWw"
     ]
   },
   "nothing": {
@@ -228,7 +257,11 @@
       "weAXPHv8GSM",
       "2HjAdIOTTho",
       "9GNziJYbGPU",
-      "WkZzz5sdSf4"
+      "WkZzz5sdSf4",
+      "JLrqp8xxc_o",
+      "684u3571YWw",
+      "b2tUh5BCEUs",
+      "kovd7OzcU9s"
     ]
   },
   "kids": {
@@ -253,7 +286,10 @@
       "2jAAusy1DYo",
       "1NYf85B7ALU",
       "piuAR9VT7hc",
-      "3nwxsYylscQ"
+      "3nwxsYylscQ",
+      "u2WXVpp2Fnc",
+      "EXa7tmy-hpo",
+      "pd-uSm8ittU"
     ]
   },
   "close": {
@@ -271,7 +307,13 @@
       "S1JbcQ5wAiU",
       "J21P-0qTo0o",
       "rXpZ2811ZLU",
-      "Lg5MVF_mcR4"
+      "Lg5MVF_mcR4",
+      "8FHS_KgayBI",
+      "qfM1Mx9zXe0",
+      "b2tUh5BCEUs",
+      "xY4FgpoQdaE",
+      "qSh2HswKn5Y",
+      "pd-uSm8ittU"
     ]
   },
   "curl": {
@@ -285,12 +327,27 @@
       "ng8PyQwztbE",
       "_Ew9B3oNHJk",
       "5Ev68XXZo6w",
-      "9GNziJYbGPU"
+      "9GNziJYbGPU",
+      "HUsA-W1e8MI",
+      "y70YhPHYATY",
+      "Mit3Bw36BYU"
     ]
   },
   "maze": {
     "label": "I want to get lost in a maze without beginning or end",
-    "sources": ["well", "still"]
+    "sources": [
+      "well",
+      "still"
+    ],
+    "videos": [
+      "-mtTlCSUKXE",
+      "eZxyT1aybsQ",
+      "qfM1Mx9zXe0",
+      "684u3571YWw",
+      "O7LITbKvSOM",
+      "u2WXVpp2Fnc",
+      "EXa7tmy-hpo"
+    ]
   },
   "toomuch": {
     "label": "Uh oh I took too much of that",
@@ -320,7 +377,12 @@
       "9Z_DrX_7Wb4",
       "9GNziJYbGPU",
       "Lg5MVF_mcR4",
-      "WkZzz5sdSf4"
+      "WkZzz5sdSf4",
+      "y70YhPHYATY",
+      "-mtTlCSUKXE",
+      "JLrqp8xxc_o",
+      "684u3571YWw",
+      "O7LITbKvSOM"
     ]
   },
   "random": {
@@ -346,7 +408,11 @@
       "3UEKPpansIE",
       "sil76t2X_DE",
       "7xXhJ2agJCg",
-      "SISBVIDLPrY"
+      "SISBVIDLPrY",
+      "HUsA-W1e8MI",
+      "u2WXVpp2Fnc",
+      "GYsQ3PAdBb4",
+      "TMA09_c91HE"
     ]
   }
 }
