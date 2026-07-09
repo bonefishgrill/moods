@@ -1,69 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="white"/>
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400&amp;display=swap');
+    </style>
 
-  <!-- dot pattern background -->
-  <pattern id="dots" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-    <circle cx="1" cy="1" r="1" fill="black"/>
-  </pattern>
-  <rect width="1200" height="630" fill="url(#dots)"/>
+    <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#cfd6d6"/>
+      <stop offset="45%" stop-color="#e7e2d8"/>
+      <stop offset="100%" stop-color="#b9c2c4"/>
+    </linearGradient>
 
-  <!-- window -->
-  <rect x="160" y="80" width="880" height="470" fill="white" stroke="black" stroke-width="3"/>
-  <rect x="163" y="83" width="874" height="464" fill="none" stroke="black" stroke-width="1"/>
+    <filter id="soften" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="55"/>
+    </filter>
 
-  <!-- title bar pinstripes -->
-  <clipPath id="bar">
-    <rect x="160" y="80" width="880" height="36"/>
-  </clipPath>
-  <rect x="160" y="80" width="880" height="36" fill="white" clip-path="url(#bar)"/>
-  <line x1="160" y1="82" x2="1040" y2="82" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="84" x2="1040" y2="84" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="86" x2="1040" y2="86" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="88" x2="1040" y2="88" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="90" x2="1040" y2="90" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="92" x2="1040" y2="92" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="94" x2="1040" y2="94" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="96" x2="1040" y2="96" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="98" x2="1040" y2="98" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="100" x2="1040" y2="100" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="102" x2="1040" y2="102" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="104" x2="1040" y2="104" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="106" x2="1040" y2="106" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="108" x2="1040" y2="108" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="110" x2="1040" y2="110" stroke="black" stroke-width="1"/>
-  <line x1="160" y1="112" x2="1040" y2="112" stroke="black" stroke-width="1"/>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix in="noise" type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0.035 0"/>
+    </filter>
+  </defs>
 
-  <!-- title bar border bottom -->
-  <line x1="160" y1="116" x2="1040" y2="116" stroke="black" stroke-width="3"/>
+  <!-- base wash -->
+  <rect width="1200" height="630" fill="url(#base)"/>
 
-  <!-- close box -->
-  <rect x="172" y="90" width="14" height="14" fill="white" stroke="black" stroke-width="1.5"/>
+  <!-- soft, blurred, out-of-focus color masses (the "photograph") -->
+  <g filter="url(#soften)">
+    <ellipse cx="260" cy="160" rx="360" ry="260" fill="#9fb3ad" opacity="0.55"/>
+    <ellipse cx="980" cy="120" rx="340" ry="220" fill="#e9e2c8" opacity="0.6"/>
+    <ellipse cx="880" cy="470" rx="420" ry="260" fill="#7c8f96" opacity="0.5"/>
+    <ellipse cx="220" cy="500" rx="320" ry="230" fill="#c7bfa8" opacity="0.5"/>
+    <ellipse cx="620" cy="320" rx="460" ry="300" fill="#d8d3c2" opacity="0.35"/>
+  </g>
 
-  <!-- title text -->
-  <rect x="555" y="84" width="90" height="28" fill="white"/>
-  <text x="600" y="103" font-family="Monaco, Courier New, monospace" font-size="14" fill="black" text-anchor="middle" letter-spacing="1">MOODS</text>
+  <!-- grain -->
+  <rect width="1200" height="630" filter="url(#grain)"/>
 
-  <!-- big title -->
-  <text x="600" y="290" font-family="Monaco, Courier New, monospace" font-size="96" fill="black" text-anchor="middle" letter-spacing="4">MOODS</text>
-
-  <!-- subtitle -->
-  <text x="600" y="360" font-family="Monaco, Courier New, monospace" font-size="24" fill="black" text-anchor="middle" letter-spacing="2">moods.computer</text>
-
-  <!-- little buttons row -->
-  <rect x="200" y="410" width="180" height="50" fill="white" stroke="black" stroke-width="2"/>
-  <rect x="204" y="414" width="172" height="42" fill="none"/>
-  <text x="290" y="442" font-family="Monaco, Courier New, monospace" font-size="13" fill="black" text-anchor="middle">WORK</text>
-
-  <rect x="400" y="410" width="180" height="50" fill="black" stroke="black" stroke-width="2"/>
-  <text x="490" y="442" font-family="Monaco, Courier New, monospace" font-size="13" fill="white" text-anchor="middle">STILL</text>
-
-  <rect x="600" y="410" width="180" height="50" fill="white" stroke="black" stroke-width="2"/>
-  <text x="690" y="442" font-family="Monaco, Courier New, monospace" font-size="13" fill="black" text-anchor="middle">WELL</text>
-
-  <rect x="800" y="410" width="180" height="50" fill="white" stroke="black" stroke-width="2"/>
-  <text x="890" y="442" font-family="Monaco, Courier New, monospace" font-size="13" fill="black" text-anchor="middle">BOOST</text>
-
-  <!-- pixel drop shadow -->
-  <rect x="164" y="554" width="880" height="4" fill="black"/>
-  <rect x="1044" y="84" width="4" height="470" fill="black"/>
+  <!-- type — small, thin, lowercase, minimal -->
+  <text x="80" y="540" font-family="Inter, Helvetica, Arial, sans-serif" font-weight="300" font-size="34" fill="#2b2f2e" letter-spacing="0.5">moods</text>
+  <text x="80" y="572" font-family="Inter, Helvetica, Arial, sans-serif" font-weight="300" font-size="15" fill="#4a4e4c" letter-spacing="2.5">MOODS.COMPUTER</text>
 </svg>
