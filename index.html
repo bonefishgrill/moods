@@ -284,7 +284,10 @@
     <div class="window-content">
 
       <div class="buttons" id="buttons">
-        <!-- Player lives inside the grid so repositioning never crosses parents (avoids iframe reload) -->
+        <!-- Player's DOM position never changes — repositioning it next to
+             the clicked button is done with CSS `order` only (see
+             positionPlayer), since moving this node would reload the
+             iframes inside it and destroy any buffered video. -->
         <div class="player-window" id="playerWrap">
           <div class="player-title-bar">
             <div class="close-box" id="playerClose"></div>
@@ -321,10 +324,14 @@
       .then(data => {
         MOODS = data;
         const container = document.getElementById('buttons');
-        Object.entries(MOODS).forEach(([mood, val]) => {
+        Object.entries(MOODS).forEach(([mood, val], i) => {
           const btn = document.createElement('button');
           btn.dataset.mood = mood;
           btn.textContent = val.label;
+          // Leaves odd order values free for the player to slot into after
+          // whichever row was clicked (see positionPlayer) — purely visual,
+          // no DOM move involved.
+          btn.style.order = i * 2;
           btn.addEventListener('click', () => onMoodClick(mood, btn));
           btn.addEventListener('mouseenter', () => startPreload(mood));
           btn.addEventListener('touchstart', () => startPreload(mood), { passive: true });
@@ -567,13 +574,21 @@
       armStall();
     }
 
+    // Moving a DOM node that contains an iframe — even just reordering it
+    // among existing siblings via insertAdjacentElement — reloads the
+    // iframe from scratch in most browsers (this is a known, previously
+    // hit issue in this file: see the "Fix player iframe reload" commit).
+    // That reload was silently destroying every bit of preloaded/buffered
+    // video on every single click, regardless of any preloading logic.
+    // Instead, the player element's DOM position never changes again —
+    // only its CSS `order` does, which is purely visual within the grid.
     function positionPlayer(btn) {
       const playerWrap = document.getElementById('playerWrap');
       const buttonsEl = document.getElementById('buttons');
       const btns = Array.from(buttonsEl.querySelectorAll('[data-mood]'));
       const idx = btns.indexOf(btn);
-      const rowEnd = (idx % 2 === 0 && btns[idx + 1]) ? btns[idx + 1] : btn;
-      rowEnd.insertAdjacentElement('afterend', playerWrap);
+      const rowIndex = Math.floor(idx / 2);
+      playerWrap.style.order = rowIndex * 2 + 1;
       playerWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
