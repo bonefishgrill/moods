@@ -463,6 +463,16 @@
     // it's ready, so even a click with no prior hover (e.g. a fast tap on
     // mobile) still gets gesture-safe autoplay instead of cold-starting
     // playback outside the user gesture (which Chrome can block).
+    // These are ambient/background videos — visual quality barely matters,
+    // and a lower tier needs far less data before playback can start. On
+    // touch devices especially, there's no hover to buffer ahead of a tap
+    // (touchstart fires essentially at the same moment as the click, no
+    // real lead time), so cutting the actual amount of data needed helps
+    // where preloading structurally can't.
+    function loadVideo(player, videoId) {
+      player.loadVideoById(videoId, 0, 'small');
+    }
+
     let activePrimed = false;
     function tryPrimeActive() {
       if (activePrimed || !playerReady[activeKey]) return;
@@ -470,7 +480,7 @@
       if (!pool.length) return;
       activePrimed = true;
       players[activeKey].mute();
-      players[activeKey].loadVideoById(pool[Math.floor(Math.random() * pool.length)]);
+      loadVideo(players[activeKey], pool[Math.floor(Math.random() * pool.length)]);
     }
 
     // Called on mouseenter/touchstart of a mood button — starts buffering a
@@ -486,7 +496,7 @@
       if (!videoId) { preloadMood = null; return; }
       preloadVideoId = videoId;
       players[key].mute();
-      players[key].loadVideoById(videoId);
+      loadVideo(players[key], videoId);
       armPreloadStall();
     }
 
@@ -576,7 +586,7 @@
       if (!videoId) return;
       showLoading();
       currentVideoId = videoId;
-      activePlayer().loadVideoById(videoId);
+      loadVideo(activePlayer(), videoId);
       armStall();
     }
 
@@ -651,14 +661,14 @@
       const key = activeKey;
       if (playerReady[key]) {
         players[key].unMute();
-        players[key].loadVideoById(videoId);
+        loadVideo(players[key], videoId);
         armStall();
       } else {
         const interval = setInterval(() => {
           if (playerReady[key]) {
             clearInterval(interval);
             players[key].unMute();
-            players[key].loadVideoById(videoId);
+            loadVideo(players[key], videoId);
             armStall();
           }
         }, 100);
