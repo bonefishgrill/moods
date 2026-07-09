@@ -145,6 +145,15 @@
       transform: translate(2px, 2px);
     }
 
+    /* Replace the browser's default blue focus ring with something that
+       matches the monochrome look, instead of just removing it (which
+       would break keyboard-only navigation) */
+    button:focus { outline: none; }
+    button:focus-visible {
+      outline: 2px dashed var(--black);
+      outline-offset: 2px;
+    }
+
     /* ── Player window ── */
     .player-window {
       border: 2px solid transparent;
