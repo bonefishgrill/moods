@@ -333,14 +333,10 @@
       .then(data => {
         MOODS = data;
         const container = document.getElementById('buttons');
-        Object.entries(MOODS).forEach(([mood, val], i) => {
+        Object.entries(MOODS).forEach(([mood, val]) => {
           const btn = document.createElement('button');
           btn.dataset.mood = mood;
           btn.textContent = val.label;
-          // Leaves odd order values free for the player to slot into after
-          // whichever row was clicked (see positionPlayer) — purely visual,
-          // no DOM move involved.
-          btn.style.order = i * 2;
           btn.addEventListener('click', () => onMoodClick(mood, btn));
           btn.addEventListener('mouseenter', () => startPreload(mood));
           btn.addEventListener('touchstart', () => startPreload(mood), { passive: true });
@@ -596,8 +592,21 @@
       const buttonsEl = document.getElementById('buttons');
       const btns = Array.from(buttonsEl.querySelectorAll('[data-mood]'));
       const idx = btns.indexOf(btn);
-      const rowIndex = Math.floor(idx / 2);
-      playerWrap.style.order = rowIndex * 2 + 1;
+      const clickedRow = Math.floor(idx / 2);
+
+      // `order` alone left a gap that CSS grid's auto-placement doesn't
+      // backfill, breaking the 2-column pairing of whichever row came
+      // right before the clicked one. Assigning every button's grid-row
+      // and grid-column explicitly (shifting rows after the clicked one
+      // down by one) avoids that — still a pure CSS change, no DOM move.
+      btns.forEach((b, i) => {
+        const naturalRow = Math.floor(i / 2);
+        const row = naturalRow > clickedRow ? naturalRow + 1 : naturalRow;
+        b.style.gridRow = row + 1;
+        b.style.gridColumn = (i % 2) + 1;
+      });
+      playerWrap.style.gridRow = clickedRow + 2;
+
       playerWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
