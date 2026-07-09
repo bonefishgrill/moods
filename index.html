@@ -194,13 +194,23 @@
       position: relative;
     }
 
-    #player {
+    /* Two player slots: whichever is "active" is visible; the other sits
+       hidden, buffering whatever mood the user last hovered/touched, ready
+       to be swapped in instantly on a matching click. */
+    .player-slot {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .player-slot.active { opacity: 1; pointer-events: auto; z-index: 1; }
+    .player-slot iframe {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
     }
 
-    /* Covers the iframe while a video is loading, so YouTube's transient
+    /* Covers the active slot while it's loading, so YouTube's transient
        init error/placeholder is never visible */
     .player-loading {
       position: absolute;
@@ -281,7 +291,8 @@
             <span class="player-title-text" id="playerTitle">Now Playing</span>
           </div>
           <div class="player-wrap">
-            <div id="player"></div>
+            <div class="player-slot active" id="slotA"><div id="playerA"></div></div>
+            <div class="player-slot" id="slotB"><div id="playerB"></div></div>
             <div class="player-loading" id="playerLoading"></div>
           </div>
         </div>
@@ -315,9 +326,11 @@
           btn.dataset.mood = mood;
           btn.textContent = val.label;
           btn.addEventListener('click', () => onMoodClick(mood, btn));
+          btn.addEventListener('mouseenter', () => startPreload(mood));
+          btn.addEventListener('touchstart', () => startPreload(mood), { passive: true });
           container.appendChild(btn);
         });
-        tryPrime();
+        tryPrimeActive();
       });
 
     // Visitor counter
@@ -357,20 +370,32 @@
       if (currentMood && document.visibilityState === 'visible') requestWakeLock();
     });
 
-    // Single shared player. Each requested video costs real network time to
-    // buffer — a previous attempt to hide that behind 12 simultaneously
-    // preloading players made things worse, not better, since every video
-    // (including the one just clicked) had to compete for bandwidth with
-    // 11 others buffering at the same time. Back to one player, one request
-    // at a time, so each click gets the full connection.
-    let player = null;
-    let playerReady = false;
+    // Two player slots. "Active" is whichever is visible/audible; the other
+    // sits hidden, buffering whichever mood the user last hovered/touched.
+    // Real YouTube buffering always costs real network time — a previous
+    // attempt to hide that by preloading all 12 moods at once made things
+    // worse, since every video (including the one just clicked) had to
+    // compete for bandwidth with 11 others buffering simultaneously. Hover
+    // gives a real, specific signal of intent instead of guessing at all of
+    // them, so only ever one extra video is buffering at a time.
+    const players = { A: null, B: null };
+    const playerReady = { A: false, B: false };
+    let activeKey = 'A';
     let currentMood = null;
     let currentVideoId = null;
     let stallTimer = null;
     const queueByMood = {};
     const recentByMood = {};
     const blockedVideos = new Set();
+
+    // What the (hidden) inactive slot is currently buffering, if anything.
+    let preloadMood = null;
+    let preloadVideoId = null;
+    let preloadReady = false;
+    let preloadStallTimer = null;
+
+    function inactiveKey() { return activeKey === 'A' ? 'B' : 'A'; }
+    function activePlayer() { return players[activeKey]; }
 
     function hidePlayer() {
       document.getElementById('playerWrap').classList.remove('show');
@@ -395,51 +420,104 @@
     function clearStall() {
       if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
     }
-
     function armStall() {
       clearStall();
       stallTimer = setTimeout(() => {
         // If still unstarted or cued after 5s, the video is blocked — skip it
-        const state = player && player.getPlayerState();
+        const state = activePlayer() && activePlayer().getPlayerState();
         if (state === YT.PlayerState.UNSTARTED || state === YT.PlayerState.CUED || state === -1) {
           playNext();
         }
       }, 5000);
     }
 
-    // Warm up the player with a muted placeholder as soon as it's ready, so
-    // by the time the user clicks a mood, YouTube is already actively
-    // playing (invisibly, muted) — a click then only has to unMute() and
-    // swap videos, which is always allowed, instead of cold-starting
-    // playback outside the user gesture (which Chrome can block).
-    let primed = false;
-    function tryPrime() {
-      if (primed || !playerReady) return;
-      const pool = Object.values(MOODS).flatMap(m => m.videos || []);
-      if (!pool.length) return;
-      primed = true;
-      player.mute();
-      player.loadVideoById(pool[Math.floor(Math.random() * pool.length)]);
+    function clearPreloadStall() {
+      if (preloadStallTimer) { clearTimeout(preloadStallTimer); preloadStallTimer = null; }
+    }
+    function armPreloadStall() {
+      clearPreloadStall();
+      preloadStallTimer = setTimeout(() => {
+        const key = inactiveKey();
+        const state = players[key] && players[key].getPlayerState();
+        if (state === YT.PlayerState.UNSTARTED || state === YT.PlayerState.CUED || state === -1) {
+          const m = preloadMood;
+          preloadMood = null;
+          if (m) startPreload(m);
+        }
+      }, 8000);
     }
 
-    window.onYouTubeIframeAPIReady = function() {
-      player = new YT.Player('player', {
+    // Warm up the initially-active slot with a muted placeholder as soon as
+    // it's ready, so even a click with no prior hover (e.g. a fast tap on
+    // mobile) still gets gesture-safe autoplay instead of cold-starting
+    // playback outside the user gesture (which Chrome can block).
+    let activePrimed = false;
+    function tryPrimeActive() {
+      if (activePrimed || !playerReady[activeKey]) return;
+      const pool = Object.values(MOODS).flatMap(m => m.videos || []);
+      if (!pool.length) return;
+      activePrimed = true;
+      players[activeKey].mute();
+      players[activeKey].loadVideoById(pool[Math.floor(Math.random() * pool.length)]);
+    }
+
+    // Called on mouseenter/touchstart of a mood button — starts buffering a
+    // candidate video (muted) in the hidden slot, so if the user actually
+    // clicks that same mood, it can be swapped in instead of loaded fresh.
+    function startPreload(mood) {
+      if (mood === currentMood || mood === preloadMood) return;
+      const key = inactiveKey();
+      if (!playerReady[key]) return;
+      preloadMood = mood;
+      preloadReady = false;
+      const videoId = nextFromQueue(mood);
+      if (!videoId) { preloadMood = null; return; }
+      preloadVideoId = videoId;
+      players[key].mute();
+      players[key].loadVideoById(videoId);
+      armPreloadStall();
+    }
+
+    function createPlayer(key) {
+      players[key] = new YT.Player('player' + key, {
         height: '100%',
         width: '100%',
         playerVars: { controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
-          onReady: () => { playerReady = true; tryPrime(); },
+          onReady: () => {
+            playerReady[key] = true;
+            if (key === activeKey) tryPrimeActive();
+          },
           onStateChange: (e) => {
-            if (e.data === YT.PlayerState.ENDED) { clearStall(); playNext(); }
-            else if (e.data === YT.PlayerState.PLAYING) { clearStall(); showPlayer(); hideLoading(); }
+            const isActive = key === activeKey;
+            if (e.data === YT.PlayerState.PLAYING) {
+              if (isActive) { clearStall(); showPlayer(); hideLoading(); }
+              else { clearPreloadStall(); preloadReady = true; }
+            } else if (e.data === YT.PlayerState.ENDED && isActive) {
+              clearStall(); playNext();
+            }
           },
           onError: () => {
-            if (currentMood && currentVideoId) blockedVideos.add(currentVideoId);
-            clearStall();
-            if (currentMood) { playNext(); } else { primed = false; tryPrime(); }
+            const isActive = key === activeKey;
+            if (isActive) {
+              if (currentVideoId) blockedVideos.add(currentVideoId);
+              clearStall();
+              if (currentMood) playNext(); else { activePrimed = false; tryPrimeActive(); }
+            } else {
+              if (preloadVideoId) blockedVideos.add(preloadVideoId);
+              clearPreloadStall();
+              const m = preloadMood;
+              preloadMood = null;
+              if (m) startPreload(m);
+            }
           }
         }
       });
+    }
+
+    window.onYouTubeIframeAPIReady = function() {
+      createPlayer('A');
+      createPlayer('B');
     };
 
     function getPool(mood) {
@@ -485,26 +563,8 @@
       if (!videoId) return;
       showLoading();
       currentVideoId = videoId;
-      player.loadVideoById(videoId);
+      activePlayer().loadVideoById(videoId);
       armStall();
-    }
-
-    function loadPlayer(videoId) {
-      showLoading();
-      currentVideoId = videoId;
-      if (playerReady) {
-        player.loadVideoById(videoId);
-        armStall();
-      } else {
-        const interval = setInterval(() => {
-          if (playerReady) {
-            clearInterval(interval);
-            currentVideoId = videoId;
-            player.loadVideoById(videoId);
-            armStall();
-          }
-        }, 100);
-      }
     }
 
     function positionPlayer(btn) {
@@ -526,13 +586,49 @@
       positionPlayer(btn);
       currentMood = mood;
       showPlayer();
+      requestWakeLock();
 
+      if (mood === preloadMood) {
+        // Promote the hidden slot to active — whether its video has
+        // already finished buffering (instant) or is still mid-flight, this
+        // reuses that work instead of starting a redundant fresh load.
+        const oldKey = activeKey;
+        const newKey = inactiveKey();
+        document.getElementById('slot' + oldKey).classList.remove('active');
+        document.getElementById('slot' + newKey).classList.add('active');
+        activeKey = newKey;
+        players[oldKey].mute();
+        currentVideoId = preloadVideoId;
+        const wasReady = preloadReady;
+        preloadMood = null; preloadVideoId = null; preloadReady = false;
+        clearPreloadStall();
+        players[newKey].unMute();
+        if (wasReady) { hideLoading(); players[newKey].playVideo(); }
+        else { showLoading(); }
+        armStall();
+        return;
+      }
+
+      // No relevant preload — fresh load on the currently active slot
       const videoId = nextFromQueue(mood);
       if (!videoId) return;
-
-      if (player && player.unMute) player.unMute();
-      requestWakeLock();
-      loadPlayer(videoId);
+      currentVideoId = videoId;
+      showLoading();
+      const key = activeKey;
+      if (playerReady[key]) {
+        players[key].unMute();
+        players[key].loadVideoById(videoId);
+        armStall();
+      } else {
+        const interval = setInterval(() => {
+          if (playerReady[key]) {
+            clearInterval(interval);
+            players[key].unMute();
+            players[key].loadVideoById(videoId);
+            armStall();
+          }
+        }, 100);
+      }
     }
 
     // Close button hides player — no DOM move so the iframe doesn't reload
@@ -540,7 +636,8 @@
       hidePlayer();
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a>';
-      if (player && player.stopVideo) player.stopVideo();
+      clearStall();
+      if (activePlayer() && activePlayer().stopVideo) activePlayer().stopVideo();
       releaseWakeLock();
       currentMood = null;
     });
