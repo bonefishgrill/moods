@@ -950,32 +950,6 @@
        AUTHENTIC PER-SKIN CHROME
        ═══════════════════════════════════════════════════════════════ */
 
-    /* ── Classic Mac: desktop menu bar ── (classic = no data-skin attr) */
-    #macMenu { display: none; }
-    body:not([data-skin]) { padding-top: 56px; }
-    body:not([data-skin]) #macMenu {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 22px;
-      padding: 0 12px;
-      background: #fff;
-      border-bottom: 2px solid #000;
-      z-index: 9997;
-      font-family: 'VT323', 'Monaco', monospace;
-      font-size: 15px;
-      color: #000;
-      user-select: none;
-    }
-    .mac-menu-apple {
-      width: 13px; height: 15px;
-      background:
-        radial-gradient(circle at 50% 64%, #000 50%, transparent 52%),
-        radial-gradient(circle at 76% 16%, #000 30%, transparent 32%);
-    }
-
     /* ── AOL: title says "America Online" + toolbar band ── */
     body[data-skin="aol"] .title-bar-title { font-size: 0; }
     body[data-skin="aol"] .title-bar-title::after {
@@ -1170,12 +1144,6 @@
       if (s && s !== 'classic') document.body.dataset.skin = s;
     } catch (e) {}
   </script>
-
-  <!-- Classic Mac desktop menu bar (classic skin only) -->
-  <div id="macMenu" aria-hidden="true">
-    <span class="mac-menu-apple"></span>
-    <span>File</span><span>Edit</span><span>View</span><span>Special</span>
-  </div>
 
   <!-- Vaporwave retro sun (vapor skin only) -->
   <div id="vaporSun" aria-hidden="true"></div>
