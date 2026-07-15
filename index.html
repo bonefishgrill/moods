@@ -385,36 +385,73 @@
        SKINS
        ═══════════════════════════════════════════════════════════════ */
 
-    /* ── WINAMP — dark metallic panels, LCD-green readout ── */
+    /* ── WINAMP — beveled gunmetal chrome, green LCD readout, numbered
+       green playlist rows, classic blue selected-row highlight ── */
     body[data-skin="winamp"] {
-      --page-bg: #0c0d10;
+      --font: 'VT323', 'Courier New', monospace;
+      --page-bg: #1b1b26;
       --page-image: none;
-      --panel: #2b2f36;
-      --ink: #c6d2e0;
-      --border: #05070a;
-      --shadow: 3px 3px 0 rgba(0,0,0,0.55);
-      --title-bg: linear-gradient(to bottom, #59647a 0%, #363d4a 48%, #1a1e26 100%);
+      --panel: #35354a;
+      --ink: #00e000;
+      --border: #05050a;
+      --shadow: 2px 2px 0 rgba(0,0,0,0.7);
+      --window-radius: 0px;
+      --title-bg: linear-gradient(to bottom, #52526c 0%, #34344b 14%, #24242f 100%);
       --title-chip-bg: transparent;
-      --title-ink: #dfe8f4;
+      --title-ink: #cfcfe6;
       --title-shadow: 0 1px 0 #000;
-      --btn-bg: linear-gradient(to bottom, #3c434d 0%, #262b31 100%);
-      --btn-ink: #21ff66;
-      --btn-border: #05070a;
-      --btn-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 2px 2px 0 rgba(0,0,0,0.5);
-      --btn-text-shadow: 0 0 6px rgba(33,255,102,0.55);
-      --btn-hover-bg: #333941;
+      --btn-bg: #0e0e16;
+      --btn-ink: #00e000;
+      --btn-border: #000;
+      --btn-shadow: inset 1px 1px 0 #45455e, inset -1px -1px 0 #000;
+      --btn-radius: 0px;
+      --btn-text-shadow: 0 0 5px rgba(0,224,0,0.45);
+      --btn-hover-bg: #17251a;
       --btn-hover-image: none;
-      --btn-active-bg: #10231a;
-      --btn-active-ink: #21ff66;
-      --status-bg: #14171b;
-      --status-ink: #21ff66;
+      --btn-active-bg: #0000b0;
+      --btn-active-ink: #00ff5a;
+      --status-bg: #0e0e16;
+      --status-ink: #00e000;
+    }
+    /* beveled outer window edge (light top-left, dark bottom-right) */
+    body[data-skin="winamp"] .window {
+      box-shadow: inset 1px 1px 0 #56566f, inset -1px -1px 0 #000, 3px 3px 0 rgba(0,0,0,0.6);
+    }
+    /* main title bar reads "WINAMP" */
+    body[data-skin="winamp"] .title-bar { height: 22px; }
+    body[data-skin="winamp"] .title-bar-title { font-size: 0; }
+    body[data-skin="winamp"] .title-bar-title::after {
+      content: 'W I N A M P';
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      font-weight: bold;
+      color: #cfcfe6;
+      text-shadow: 0 1px 0 #000;
+    }
+    /* mood buttons become numbered green LCD playlist rows */
+    body[data-skin="winamp"] #buttons { counter-reset: pl; }
+    body[data-skin="winamp"] [data-mood]::before {
+      counter-increment: pl;
+      content: counter(pl) ". ";
     }
     body[data-skin="winamp"] button:active,
     body[data-skin="winamp"] button.active {
-      text-shadow: 0 0 8px rgba(33,255,102,0.8);
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+      text-shadow: 0 0 6px rgba(0,255,90,0.7);
+      box-shadow: inset 1px 1px 0 #2a2ad6, inset -1px -1px 0 #000;
+      transform: none;
     }
-    body[data-skin="winamp"] .skin-bar-label { color: #21ff66; opacity: 0.85; }
+    /* player title styled as the green LCD marquee on black */
+    body[data-skin="winamp"] .player-title-bar {
+      background: linear-gradient(to bottom, #52526c 0%, #34344b 20%, #24242f 100%);
+    }
+    body[data-skin="winamp"] .player-title-text {
+      background: #000;
+      color: #00e000;
+      text-shadow: 0 0 5px rgba(0,224,0,0.5);
+      border: 1px solid #000;
+      letter-spacing: 0.08em;
+    }
+    body[data-skin="winamp"] .skin-bar-label { color: #00e000; opacity: 0.9; }
 
     /* ── ROCKS — carved granite slabs ── */
     body[data-skin="rocks"] {
@@ -644,11 +681,9 @@
     /* ── GAME BOY — 4-shade DMG green LCD with dot-matrix grid ── */
     body[data-skin="gameboy"] {
       --font: 'VT323', 'Courier New', monospace;
-      --page-bg: #8bac0f;
-      --page-image:
-        repeating-linear-gradient(to bottom, rgba(15,56,15,0.10) 0 1px, transparent 1px 3px),
-        repeating-linear-gradient(to right, rgba(15,56,15,0.10) 0 1px, transparent 1px 3px);
-      --page-size: 3px 3px;
+      --page-bg: #b7b6a6;               /* DMG putty-gray plastic case */
+      --page-image: radial-gradient(rgba(0,0,0,0.05) 1px, transparent 1px);
+      --page-size: 4px 4px;
       --panel: #9bbc0f;
       --ink: #0f380f;
       --border: #0f380f;
@@ -705,18 +740,174 @@
       padding-bottom: 56px;
     }
     body[data-skin="weather"] .title-bar-title { font-weight: 800; letter-spacing: 0.06em; }
+    /* Dock the moods UI to the left as a translucent forecast panel so the
+       WeatherStar scene (radar + rotating forecast) fills the rest. */
+    body[data-skin="weather"] .skin-bar,
+    body[data-skin="weather"] .window {
+      align-self: flex-start;
+      margin-left: min(5vw, 56px);
+      max-width: 430px;
+    }
+    body[data-skin="weather"] .window { margin-top: 6px; }
 
-    /* Playing video → full-screen background layer */
+    /* Playing video → sits BEHIND the retro backdrop (z-index -2). It's
+       hidden from view but keeps playing, so your chosen mood is the
+       soundtrack over the weather graphics — just like Local on the 8s. */
     body[data-skin="weather"] .player-window.show {
       position: fixed;
       inset: 0;
-      z-index: -1;
+      z-index: -2;
       max-height: none;
       border: none;
       box-shadow: none;
       border-radius: 0;
       overflow: hidden;
     }
+    body[data-skin="weather"] .player-window.show::after { display: none; }
+
+    /* ── Retro WeatherStar backdrop ── */
+    #wxBackdrop { display: none; }
+    body[data-skin="weather"] #wxBackdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      font-family: 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
+      background:
+        linear-gradient(180deg, #2b2560 0%, #3b3178 26%, #6455a4 52%, #b58a6a 78%, #d8a86e 100%);
+    }
+    .wx-clouds {
+      position: absolute;
+      inset: -25%;
+      background:
+        radial-gradient(ellipse 38% 20% at 18% 26%, rgba(255,255,255,0.28), transparent 70%),
+        radial-gradient(ellipse 46% 24% at 58% 18%, rgba(255,255,255,0.20), transparent 70%),
+        radial-gradient(ellipse 42% 22% at 82% 36%, rgba(255,255,255,0.24), transparent 70%),
+        radial-gradient(ellipse 52% 26% at 38% 58%, rgba(235,225,255,0.16), transparent 70%),
+        radial-gradient(ellipse 48% 24% at 74% 70%, rgba(255,238,210,0.18), transparent 70%);
+      filter: blur(8px);
+      animation: wxdrift 70s ease-in-out infinite alternate;
+    }
+    @keyframes wxdrift {
+      from { transform: translateX(-3%) translateY(-1%); }
+      to   { transform: translateX(3%)  translateY(1%); }
+    }
+    /* faint CRT scanlines over the whole scene */
+    .wx-scanlines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,0.10) 2px 3px);
+    }
+    .wx-scene { position: absolute; inset: 0; }
+
+    /* Channel bug, top center */
+    .wx-bug {
+      position: absolute;
+      top: 22px; left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(#1c48b8, #0c2c86);
+      color: #fff;
+      font-weight: 800;
+      font-size: 11px;
+      line-height: 1.05;
+      letter-spacing: 0.06em;
+      text-align: center;
+      padding: 5px 9px;
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 3px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .wx-heading {
+      position: absolute;
+      top: 70px; left: 42%; right: 2%;
+      text-align: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 30px;
+      letter-spacing: 0.02em;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.55);
+    }
+
+    /* Radar / compass sweep, over the open right-hand stage */
+    .wx-radar {
+      position: absolute;
+      left: 67%; top: 48%;
+      transform: translate(-50%, -50%);
+      width: 300px; height: 300px;
+      max-width: 44vw; max-height: 44vw;
+    }
+    .wx-radar-map {
+      position: absolute; inset: 14%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 42% 38%, rgba(214,120,54,0.55), rgba(150,74,40,0.35) 42%, transparent 72%),
+        radial-gradient(circle at 62% 66%, rgba(196,104,48,0.4), transparent 55%);
+      filter: blur(2px);
+    }
+    .wx-radar-rings {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.35);
+      background:
+        radial-gradient(circle, transparent 65%, rgba(255,255,255,0.14) 66%, transparent 68%),
+        radial-gradient(circle, transparent 42%, rgba(255,255,255,0.12) 43%, transparent 45%),
+        radial-gradient(circle, transparent 19%, rgba(255,255,255,0.12) 20%, transparent 22%);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    }
+    /* crosshair lines */
+    .wx-radar-rings::before,
+    .wx-radar-rings::after {
+      content: '';
+      position: absolute;
+      background: rgba(255,255,255,0.18);
+    }
+    .wx-radar-rings::before { left: 50%; top: 0; bottom: 0; width: 1px; transform: translateX(-0.5px); }
+    .wx-radar-rings::after  { top: 50%; left: 0; right: 0; height: 1px; transform: translateY(-0.5px); }
+    .wx-radar-sweep {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, rgba(126,255,168,0.55), rgba(126,255,168,0.05) 26%, transparent 34%);
+      animation: wxsweep 4s linear infinite;
+    }
+    .wx-radar-dot {
+      position: absolute; left: 50%; top: 50%;
+      width: 6px; height: 6px; margin: -3px 0 0 -3px;
+      border-radius: 50%;
+      background: #eafff0;
+      box-shadow: 0 0 8px rgba(126,255,168,0.9);
+    }
+    @keyframes wxsweep { to { transform: rotate(360deg); } }
+
+    /* Rotating forecast panels, lower third */
+    .wx-panels {
+      position: absolute;
+      left: 67%;
+      bottom: 92px;
+      transform: translateX(-50%);
+      width: min(520px, 44vw);
+      height: 132px;
+    }
+    .wx-panel {
+      position: absolute;
+      inset: 0;
+      text-align: center;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.55);
+    }
+    .wx-panel.active { opacity: 1; }
+    .wx-panel-title {
+      font-size: 22px; font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #ffd21e;
+      text-transform: uppercase;
+    }
+    .wx-panel-temp { font-size: 52px; font-weight: 800; line-height: 1.05; }
+    .wx-panel-cond { font-size: 24px; font-weight: 700; }
+    .wx-panel-meta { font-size: 15px; font-weight: 600; opacity: 0.92; margin-top: 3px; }
     body[data-skin="weather"] .player-window .player-title-bar { display: none; }
     body[data-skin="weather"] .player-window.show .player-wrap {
       width: 100vw;
@@ -792,6 +983,221 @@
       from { transform: translateX(0); }
       to   { transform: translateX(-50%); }
     }
+
+    /* ═══════════════════════════════════════════════════════════════
+       AUTHENTIC PER-SKIN CHROME
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Classic Mac: desktop menu bar ── (classic = no data-skin attr) */
+    #macMenu { display: none; }
+    body:not([data-skin]) { padding-top: 56px; }
+    body:not([data-skin]) #macMenu {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 22px;
+      padding: 0 12px;
+      background: #fff;
+      border-bottom: 2px solid #000;
+      z-index: 9997;
+      font-family: 'VT323', 'Monaco', monospace;
+      font-size: 15px;
+      color: #000;
+      user-select: none;
+    }
+    .mac-menu-apple {
+      width: 13px; height: 15px;
+      background:
+        radial-gradient(circle at 50% 64%, #000 50%, transparent 52%),
+        radial-gradient(circle at 76% 16%, #000 30%, transparent 32%);
+    }
+
+    /* ── AOL: title says "America Online" + toolbar band ── */
+    body[data-skin="aol"] .title-bar-title { font-size: 0; }
+    body[data-skin="aol"] .title-bar-title::after {
+      content: 'America Online';
+      font-size: 12px; font-weight: bold; color: #fff; letter-spacing: 0;
+    }
+    #aolbar { display: none; }
+    body[data-skin="aol"] #aolbar {
+      display: flex;
+      align-items: stretch;
+      gap: 3px;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto 4px;
+      padding: 4px 6px;
+      background: #d4d0c8;
+      border: 2px solid #000;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.35);
+      font-family: Tahoma, 'MS Sans Serif', Geneva, sans-serif;
+    }
+    .aol-tb-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1px;
+      min-width: 48px;
+      padding: 3px 5px;
+      font-size: 10px; color: #0a2c8a;
+      background: #ece9d8;
+      box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+      cursor: default;
+    }
+    .aol-tb-btn span { font-size: 10px; }
+    .aol-tb-spacer { flex: 1; }
+    .aol-tb-mail {
+      display: flex; align-items: center;
+      padding: 0 12px;
+      font-weight: bold; color: #cc0000;
+      font-size: 12px;
+      text-shadow: 0 1px 0 #fff;
+    }
+
+    /* ── Windows 98: taskbar with Start button + tray clock ── */
+    #win98bar { display: none; }
+    body[data-skin="win98"] { padding-bottom: 44px; }
+    body[data-skin="win98"] #win98bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: 32px;
+      padding: 3px 4px;
+      background: #c0c0c0;
+      border-top: 2px solid #fff;
+      z-index: 9997;
+      font-family: Tahoma, 'MS Sans Serif', Geneva, sans-serif;
+      font-size: 13px;
+      color: #000;
+    }
+    .w98-start {
+      display: flex; align-items: center; gap: 5px;
+      font-family: inherit; font-size: 13px; font-weight: bold; color: #000;
+      padding: 3px 9px 4px 6px;
+      background: #c0c0c0; border: 0;
+      box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #404040, inset 2px 2px 0 #dfdfdf, inset -2px -2px 0 #808080;
+      cursor: pointer;
+    }
+    .w98-start:active { box-shadow: inset 1px 1px 0 #404040, inset -1px -1px 0 #fff; }
+    .w98-flag {
+      width: 16px; height: 15px;
+      background:
+        linear-gradient(#ff5145 0 50%, #4bd35f 0 100%) left / 7px 100% no-repeat,
+        linear-gradient(#3aa0ff 0 50%, #ffd23a 0 100%) right / 7px 100% no-repeat;
+      transform: perspective(20px) rotateY(-14deg);
+    }
+    .w98-task {
+      padding: 4px 10px;
+      max-width: 200px;
+      background: #c0c0c0;
+      box-shadow: inset 1px 1px 0 #404040, inset -1px -1px 0 #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .w98-tray {
+      margin-left: auto;
+      padding: 4px 10px;
+      box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #fff;
+    }
+
+    /* ── Terminal: DOS prompt line with blinking cursor ── */
+    #dosPrompt { display: none; }
+    body[data-skin="crt"] #dosPrompt {
+      display: block;
+      width: 100%; max-width: 680px;
+      margin: 0 auto 6px;
+      padding: 0 4px;
+      color: #35ff6a;
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      text-shadow: 0 0 6px rgba(53,255,106,0.6);
+      text-align: left;
+    }
+    .dos-cursor { animation: dosblink 1s steps(1) infinite; }
+    @keyframes dosblink { 50% { opacity: 0; } }
+
+    /* ── GeoCities: under-construction marquee banner ── */
+    #geoBanner { display: none; }
+    body[data-skin="geocities"] #geoBanner {
+      display: block;
+      width: 100%; max-width: 680px;
+      margin: 0 auto 6px;
+      overflow: hidden;
+      white-space: nowrap;
+      background: #000;
+      border: 3px ridge #ffff00;
+      color: #00ff00;
+      font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+      font-weight: bold;
+      font-size: 15px;
+      padding: 4px 0;
+    }
+    .geo-marquee { display: inline-block; padding-left: 100%; animation: geoscroll 22s linear infinite; }
+    @keyframes geoscroll { to { transform: translateX(-100%); } }
+
+    /* ── Aqua: mac OS X traffic-light window buttons ── */
+    body[data-skin="aqua"] .title-bar { height: 26px; }
+    body[data-skin="aqua"] .player-title-bar { height: 22px; }
+    body[data-skin="aqua"] .close-box {
+      left: 12px; top: 50%; transform: translateY(-50%);
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #ff5f57; border: 1px solid #e0443e;
+      box-shadow: none;
+    }
+    body[data-skin="aqua"] .close-box:hover { filter: brightness(1.1); background: #ff5f57; }
+    body[data-skin="aqua"] .close-box::before,
+    body[data-skin="aqua"] .close-box::after {
+      content: ''; position: absolute; top: -1px;
+      width: 12px; height: 12px; border-radius: 50%;
+    }
+    body[data-skin="aqua"] .close-box::before { left: 16px; background: #febc2e; border: 1px solid #e0a325; }
+    body[data-skin="aqua"] .close-box::after  { left: 32px; background: #28c840; border: 1px solid #22a934; }
+
+    /* ── Vaporwave: retro sun behind everything ── */
+    #vaporSun { display: none; }
+    body[data-skin="vapor"] #vaporSun {
+      display: block;
+      position: fixed;
+      z-index: -1;
+      left: 50%; top: 26%;
+      transform: translate(-50%, -50%);
+      width: min(360px, 70vw); aspect-ratio: 1;
+      border-radius: 50%;
+      background: linear-gradient(#fff59d 0%, #ff8ac4 46%, #d838f0 100%);
+      -webkit-mask:
+        linear-gradient(#000 0 0) top / 100% 52% no-repeat,
+        repeating-linear-gradient(#000 0 7px, transparent 7px 12px) bottom / 100% 48% no-repeat;
+      mask:
+        linear-gradient(#000 0 0) top / 100% 52% no-repeat,
+        repeating-linear-gradient(#000 0 7px, transparent 7px 12px) bottom / 100% 48% no-repeat;
+      filter: drop-shadow(0 0 44px rgba(255,110,199,0.55));
+    }
+
+    /* ── Game Boy: gray DMG case + dark-bezel green screen ── */
+    body[data-skin="gameboy"] .window {
+      border: 4px solid #23231f;
+      border-radius: 8px 8px 42px 8px;   /* signature rounded bottom-right */
+      box-shadow: 6px 8px 0 rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    body[data-skin="gameboy"] .title-bar {
+      height: 26px;
+      background: #4a4a46;
+      border-bottom: 2px solid #23231f;
+    }
+    body[data-skin="gameboy"] .title-bar-title { font-size: 0; background: transparent; }
+    body[data-skin="gameboy"] .title-bar-title::after {
+      content: '● DOT MATRIX WITH STEREO SOUND';
+      font-size: 11px; font-style: italic; font-weight: bold;
+      color: #c9c9bd; letter-spacing: 0.04em;
+    }
+    body[data-skin="gameboy"] .close-box {
+      left: 8px; width: 7px; height: 7px; border-radius: 50%;
+      background: #e2453a; border: 1px solid #7a1e18;
+      box-shadow: 0 0 5px rgba(226,69,58,0.9);
+    }
+    body[data-skin="gameboy"] .close-box:hover { background: #e2453a; }
   </style>
 </head>
 <body>
@@ -803,9 +1209,68 @@
     } catch (e) {}
   </script>
 
+  <!-- Classic Mac desktop menu bar (classic skin only) -->
+  <div id="macMenu" aria-hidden="true">
+    <span class="mac-menu-apple"></span>
+    <span>File</span><span>Edit</span><span>View</span><span>Special</span>
+  </div>
+
+  <!-- Vaporwave retro sun (vapor skin only) -->
+  <div id="vaporSun" aria-hidden="true"></div>
+
+  <!-- DOS prompt line (terminal skin only) -->
+  <div id="dosPrompt" aria-hidden="true">C:\MOODS&gt; play mood <span class="dos-cursor">█</span></div>
+
+  <!-- GeoCities under-construction marquee (geocities skin only) -->
+  <div id="geoBanner" aria-hidden="true"><span class="geo-marquee">🚧 UNDER CONSTRUCTION 🚧 &nbsp;&nbsp; ♥ WELCOME TO MY MOODS PAGE ♥ &nbsp;&nbsp; ★ Best viewed in Netscape Navigator @ 800×600 ★ &nbsp;&nbsp; ✉ Sign my guestbook! &nbsp;&nbsp; 🔥 You are visitor #000001 🔥 &nbsp;&nbsp;</span></div>
+
   <!-- Skin picker — buttons injected by JS from the SKINS list -->
   <div class="skin-bar" id="skinBar">
     <span class="skin-bar-label">skin:</span>
+  </div>
+
+  <!-- Weather Channel retro backdrop (WeatherStar "Local on the 8s" style).
+       Only visible in the weather skin. The mood video plays hidden behind
+       this, so you hear your mood as the soundtrack over the weather. -->
+  <div id="wxBackdrop" aria-hidden="true">
+    <div class="wx-clouds"></div>
+    <div class="wx-scanlines"></div>
+    <div class="wx-scene">
+      <div class="wx-bug">THE<br>WEATHER<br>CHANNEL</div>
+      <div class="wx-heading">Local Forecast</div>
+      <div class="wx-radar">
+        <div class="wx-radar-map"></div>
+        <div class="wx-radar-rings"></div>
+        <div class="wx-radar-sweep"></div>
+        <div class="wx-radar-dot"></div>
+      </div>
+      <div class="wx-panels" id="wxPanels">
+        <div class="wx-panel">
+          <div class="wx-panel-title">Current Conditions</div>
+          <div class="wx-panel-temp">72&deg;</div>
+          <div class="wx-panel-cond">Mostly Moody</div>
+          <div class="wx-panel-meta">Wind NW 4 mph &nbsp;&bull;&nbsp; Humidity 61%</div>
+        </div>
+        <div class="wx-panel">
+          <div class="wx-panel-title">Tonight</div>
+          <div class="wx-panel-temp">58&deg;</div>
+          <div class="wx-panel-cond">Calm &amp; Ambient</div>
+          <div class="wx-panel-meta">Clear skies &nbsp;&bull;&nbsp; Light breeze</div>
+        </div>
+        <div class="wx-panel">
+          <div class="wx-panel-title">Tomorrow</div>
+          <div class="wx-panel-temp">74&deg;</div>
+          <div class="wx-panel-cond">A Chance of Groove</div>
+          <div class="wx-panel-meta">Highs in the mid 70s</div>
+        </div>
+        <div class="wx-panel">
+          <div class="wx-panel-title">Extended Outlook</div>
+          <div class="wx-panel-temp">☼</div>
+          <div class="wx-panel-cond">Good Vibes</div>
+          <div class="wx-panel-meta">Continuing through the weekend</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Weather Channel scrolling ticker (only visible in the weather skin) -->
@@ -815,6 +1280,18 @@
       <span>CURRENT CONDITIONS&nbsp;&nbsp;72&deg;F&nbsp;&nbsp;MOSTLY MOODY&nbsp;&nbsp;&bull;&nbsp;&nbsp;WIND&nbsp;NW 4 MPH&nbsp;&nbsp;&bull;&nbsp;&nbsp;HUMIDITY 61%&nbsp;&nbsp;&bull;&nbsp;&nbsp;BAROMETER 30.08 &amp; RISING&nbsp;&nbsp;&bull;&nbsp;&nbsp;TONIGHT&nbsp;&nbsp;CALM &amp; AMBIENT&nbsp;&nbsp;LOW 58&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;TOMORROW&nbsp;&nbsp;A CHANCE OF GROOVE&nbsp;&nbsp;HIGH 74&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;EXTENDED OUTLOOK&nbsp;&nbsp;VIBES CONTINUING THROUGH THE WEEKEND&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
       <span>CURRENT CONDITIONS&nbsp;&nbsp;72&deg;F&nbsp;&nbsp;MOSTLY MOODY&nbsp;&nbsp;&bull;&nbsp;&nbsp;WIND&nbsp;NW 4 MPH&nbsp;&nbsp;&bull;&nbsp;&nbsp;HUMIDITY 61%&nbsp;&nbsp;&bull;&nbsp;&nbsp;BAROMETER 30.08 &amp; RISING&nbsp;&nbsp;&bull;&nbsp;&nbsp;TONIGHT&nbsp;&nbsp;CALM &amp; AMBIENT&nbsp;&nbsp;LOW 58&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;TOMORROW&nbsp;&nbsp;A CHANCE OF GROOVE&nbsp;&nbsp;HIGH 74&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;EXTENDED OUTLOOK&nbsp;&nbsp;VIBES CONTINUING THROUGH THE WEEKEND&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
     </div>
+  </div>
+
+  <!-- AOL-style toolbar (aol skin only) -->
+  <div id="aolbar" aria-hidden="true">
+    <div class="aol-tb-btn">📖<span>Read</span></div>
+    <div class="aol-tb-btn">✉️<span>Write</span></div>
+    <div class="aol-tb-btn">📬<span>Mail</span></div>
+    <div class="aol-tb-btn">👥<span>People</span></div>
+    <div class="aol-tb-btn">🔍<span>Find</span></div>
+    <div class="aol-tb-btn">⭐<span>Favorites</span></div>
+    <div class="aol-tb-spacer"></div>
+    <div class="aol-tb-mail">You've Got Mail!</div>
   </div>
 
   <!-- Main window -->
@@ -851,6 +1328,13 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- Windows 98 taskbar (win98 skin only) -->
+  <div id="win98bar" aria-hidden="true">
+    <button class="w98-start"><span class="w98-flag"></span>Start</button>
+    <div class="w98-task">🎵 Moods v1.0</div>
+    <div class="w98-tray"><span id="w98clock"></span></div>
   </div>
 
   <script>
@@ -907,6 +1391,19 @@
         if (btn) applySkin(btn.dataset.skinBtn);
       });
 
+      // Rotate the retro weather forecast panels (cheap; runs regardless of
+      // skin since the backdrop is hidden unless the weather skin is active)
+      const wxPanels = document.querySelectorAll('#wxPanels .wx-panel');
+      if (wxPanels.length) {
+        let wi = 0;
+        wxPanels[0].classList.add('active');
+        setInterval(() => {
+          wxPanels[wi].classList.remove('active');
+          wi = (wi + 1) % wxPanels.length;
+          wxPanels[wi].classList.add('active');
+        }, 5000);
+      }
+
       let saved = 'classic';
       try { saved = localStorage.getItem(KEY) || 'classic'; } catch (e) {}
       applySkin(saved);
@@ -946,8 +1443,10 @@
     // Clock
     function updateClock() {
       const now = new Date();
-      document.getElementById('clock').textContent =
-        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const t = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('clock').textContent = t;
+      const w98 = document.getElementById('w98clock');
+      if (w98) w98.textContent = t;
     }
     updateClock();
     setInterval(updateClock, 1000);
