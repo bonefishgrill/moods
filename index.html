@@ -1348,8 +1348,11 @@
       const KEY = 'moods-skin';
       const bar = document.getElementById('skinBar');
 
-      // Build the picker buttons
+      // Build the picker buttons. "weather" is intentionally left out of the
+      // picker — it's reached via the "Put on the Weather Channel" mood button
+      // instead — but it stays a valid skin id so applySkin('weather') works.
       SKINS.forEach(([id, label]) => {
+        if (id === 'weather') return;
         const b = document.createElement('button');
         b.className = 'skin-swatch';
         b.dataset.skinBtn = id;
@@ -1374,6 +1377,9 @@
         const btn = e.target.closest('[data-skin-btn]');
         if (btn) applySkin(btn.dataset.skinBtn);
       });
+
+      // Let the mood buttons (in the other script) switch skins too.
+      window.__moodsSetSkin = applySkin;
 
       let saved = 'classic';
       try { saved = localStorage.getItem(KEY) || 'classic'; } catch (e) {}
@@ -1480,7 +1486,9 @@
   <script>
     let MOODS = {};
 
-    fetch('playlists.json')
+    // `no-cache` forces a quick revalidation so playlist edits show up on the
+    // next load instead of being masked by a stale HTTP-cached copy.
+    fetch('playlists.json', { cache: 'no-cache' })
       .then(r => r.json())
       .then(data => {
         MOODS = data;
@@ -1776,6 +1784,12 @@
     }
 
     function onMoodClick(mood, btn) {
+      // The "Put on the Weather Channel" mood also flips into the weather skin,
+      // so its calm playlist becomes the soundtrack over the WeatherStar scene.
+      if (mood === 'weatherchannel' && window.__moodsSetSkin) {
+        window.__moodsSetSkin('weather');
+      }
+
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('hint').textContent = 'playing: ' + mood.toUpperCase();
