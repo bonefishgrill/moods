@@ -898,6 +898,13 @@
     .wx-panel-temp { font-size: 44px; font-weight: 800; line-height: 1.08; }
     .wx-panel-cond { font-size: 20px; font-weight: 700; }
     .wx-panel-meta { font-size: 13px; font-weight: 600; opacity: 0.92; margin-top: 2px; }
+    /* On phones the full-width window covers the radar + forecast card, so they
+       just ghost through the translucent panel — hide them; the sky, bug and
+       ticker still read as the Weather Channel. */
+    @media (max-width: 600px) {
+      body[data-skin="weather"] .wx-radar,
+      body[data-skin="weather"] .wx-panels { display: none; }
+    }
     /* Hide the big centered heading in this layout — the ticker and forecast
        card already carry the city + conditions, and it would clash with the
        centered skin picker at the top. */
