@@ -1237,37 +1237,21 @@
     <div class="wx-scanlines"></div>
     <div class="wx-scene">
       <div class="wx-bug">THE<br>WEATHER<br>CHANNEL</div>
-      <div class="wx-heading">Local Forecast</div>
+      <div class="wx-heading" id="wxHeading">Local Forecast</div>
       <div class="wx-radar">
         <div class="wx-radar-map"></div>
         <div class="wx-radar-rings"></div>
         <div class="wx-radar-sweep"></div>
         <div class="wx-radar-dot"></div>
       </div>
+      <!-- Panels are populated with real local weather by JS (see below).
+           This is the pre-load / offline fallback. -->
       <div class="wx-panels" id="wxPanels">
-        <div class="wx-panel">
+        <div class="wx-panel active">
           <div class="wx-panel-title">Current Conditions</div>
-          <div class="wx-panel-temp">72&deg;</div>
-          <div class="wx-panel-cond">Mostly Moody</div>
-          <div class="wx-panel-meta">Wind NW 4 mph &nbsp;&bull;&nbsp; Humidity 61%</div>
-        </div>
-        <div class="wx-panel">
-          <div class="wx-panel-title">Tonight</div>
-          <div class="wx-panel-temp">58&deg;</div>
-          <div class="wx-panel-cond">Calm &amp; Ambient</div>
-          <div class="wx-panel-meta">Clear skies &nbsp;&bull;&nbsp; Light breeze</div>
-        </div>
-        <div class="wx-panel">
-          <div class="wx-panel-title">Tomorrow</div>
-          <div class="wx-panel-temp">74&deg;</div>
-          <div class="wx-panel-cond">A Chance of Groove</div>
-          <div class="wx-panel-meta">Highs in the mid 70s</div>
-        </div>
-        <div class="wx-panel">
-          <div class="wx-panel-title">Extended Outlook</div>
-          <div class="wx-panel-temp">☼</div>
-          <div class="wx-panel-cond">Good Vibes</div>
-          <div class="wx-panel-meta">Continuing through the weekend</div>
+          <div class="wx-panel-temp">—°</div>
+          <div class="wx-panel-cond">Loading…</div>
+          <div class="wx-panel-meta">Getting your local forecast</div>
         </div>
       </div>
     </div>
@@ -1277,8 +1261,8 @@
   <div id="wxTicker" aria-hidden="true">
     <div class="wx-ticker-tag">LOCAL ON THE 8s</div>
     <div class="wx-ticker-track">
-      <span>CURRENT CONDITIONS&nbsp;&nbsp;72&deg;F&nbsp;&nbsp;MOSTLY MOODY&nbsp;&nbsp;&bull;&nbsp;&nbsp;WIND&nbsp;NW 4 MPH&nbsp;&nbsp;&bull;&nbsp;&nbsp;HUMIDITY 61%&nbsp;&nbsp;&bull;&nbsp;&nbsp;BAROMETER 30.08 &amp; RISING&nbsp;&nbsp;&bull;&nbsp;&nbsp;TONIGHT&nbsp;&nbsp;CALM &amp; AMBIENT&nbsp;&nbsp;LOW 58&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;TOMORROW&nbsp;&nbsp;A CHANCE OF GROOVE&nbsp;&nbsp;HIGH 74&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;EXTENDED OUTLOOK&nbsp;&nbsp;VIBES CONTINUING THROUGH THE WEEKEND&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
-      <span>CURRENT CONDITIONS&nbsp;&nbsp;72&deg;F&nbsp;&nbsp;MOSTLY MOODY&nbsp;&nbsp;&bull;&nbsp;&nbsp;WIND&nbsp;NW 4 MPH&nbsp;&nbsp;&bull;&nbsp;&nbsp;HUMIDITY 61%&nbsp;&nbsp;&bull;&nbsp;&nbsp;BAROMETER 30.08 &amp; RISING&nbsp;&nbsp;&bull;&nbsp;&nbsp;TONIGHT&nbsp;&nbsp;CALM &amp; AMBIENT&nbsp;&nbsp;LOW 58&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;TOMORROW&nbsp;&nbsp;A CHANCE OF GROOVE&nbsp;&nbsp;HIGH 74&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;EXTENDED OUTLOOK&nbsp;&nbsp;VIBES CONTINUING THROUGH THE WEEKEND&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
+      <span>RETRIEVING LOCAL CONDITIONS&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
+      <span>RETRIEVING LOCAL CONDITIONS&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
     </div>
   </div>
 
@@ -1391,22 +1375,105 @@
         if (btn) applySkin(btn.dataset.skinBtn);
       });
 
-      // Rotate the retro weather forecast panels (cheap; runs regardless of
-      // skin since the backdrop is hidden unless the weather skin is active)
-      const wxPanels = document.querySelectorAll('#wxPanels .wx-panel');
-      if (wxPanels.length) {
-        let wi = 0;
-        wxPanels[0].classList.add('active');
-        setInterval(() => {
-          wxPanels[wi].classList.remove('active');
-          wi = (wi + 1) % wxPanels.length;
-          wxPanels[wi].classList.add('active');
-        }, 5000);
-      }
-
       let saved = 'classic';
       try { saved = localStorage.getItem(KEY) || 'classic'; } catch (e) {}
       applySkin(saved);
+    })();
+  </script>
+  <script>
+    // ── Real local weather for the Weather Channel skin ──
+    // Location comes from the visitor's IP (no permission prompt, like the
+    // real RetroCast); conditions come from Open-Meteo (free, no API key,
+    // CORS-enabled). Falls back silently to the "loading" state if offline.
+    (function () {
+      const WMO = {
+        0:'Clear', 1:'Mainly Clear', 2:'Partly Cloudy', 3:'Overcast',
+        45:'Fog', 48:'Freezing Fog', 51:'Light Drizzle', 53:'Drizzle', 55:'Heavy Drizzle',
+        56:'Freezing Drizzle', 57:'Freezing Drizzle', 61:'Light Rain', 63:'Rain', 65:'Heavy Rain',
+        66:'Freezing Rain', 67:'Freezing Rain', 71:'Light Snow', 73:'Snow', 75:'Heavy Snow',
+        77:'Snow Grains', 80:'Light Showers', 81:'Showers', 82:'Heavy Showers',
+        85:'Snow Showers', 86:'Snow Showers', 95:'Thunderstorms', 96:'Thunderstorms', 99:'Thunderstorms'
+      };
+      const cond = c => WMO[c] || 'Fair';
+      const COMPASS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      const dir = d => COMPASS[Math.round(d / 22.5) % 16];
+      const r = n => Math.round(n);
+
+      let rotTimer = null;
+      function startRotation() {
+        clearInterval(rotTimer);
+        const els = document.querySelectorAll('#wxPanels .wx-panel');
+        if (els.length < 2) return;
+        let i = 0;
+        rotTimer = setInterval(() => {
+          els[i].classList.remove('active');
+          i = (i + 1) % els.length;
+          els[i].classList.add('active');
+        }, 5000);
+      }
+
+      function setPanels(panels) {
+        const wrap = document.getElementById('wxPanels');
+        if (!wrap) return;
+        wrap.innerHTML = panels.map((p, i) =>
+          '<div class="wx-panel' + (i === 0 ? ' active' : '') + '">' +
+            '<div class="wx-panel-title">' + p.title + '</div>' +
+            '<div class="wx-panel-temp">' + p.temp + '</div>' +
+            '<div class="wx-panel-cond">' + p.cond + '</div>' +
+            '<div class="wx-panel-meta">' + p.meta + '</div>' +
+          '</div>').join('');
+        startRotation();
+      }
+
+      function setTicker(text) {
+        document.querySelectorAll('#wxTicker .wx-ticker-track span')
+          .forEach(s => { s.textContent = text; });
+      }
+
+      async function load() {
+        const geo = await fetch('https://get.geojs.io/v1/ip/geo.json').then(r => r.json());
+        const lat = geo.latitude, lon = geo.longitude;
+        const us = geo.country_code === 'US';
+        const tUnit = us ? 'fahrenheit' : 'celsius';
+        const wParam = us ? 'mph' : 'kmh';
+        const wLabel = us ? 'mph' : 'km/h';
+        const D = '°';
+
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+          '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m' +
+          '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
+          '&temperature_unit=' + tUnit + '&wind_speed_unit=' + wParam +
+          '&timezone=auto&forecast_days=5';
+        const w = await fetch(url).then(r => r.json());
+        const c = w.current, d = w.daily;
+
+        const place = geo.city ? (geo.region && geo.region !== geo.city ? geo.city + ', ' + geo.region : geo.city) : '';
+        const h = document.getElementById('wxHeading');
+        if (h) h.textContent = (place ? place + ' — ' : '') + 'Local Forecast';
+
+        setPanels([
+          { title: 'Current Conditions', temp: r(c.temperature_2m) + D, cond: cond(c.weather_code),
+            meta: 'Wind ' + dir(c.wind_direction_10m) + ' ' + r(c.wind_speed_10m) + ' ' + wLabel +
+                  ' • Humidity ' + c.relative_humidity_2m + '%' },
+          { title: 'Tonight', temp: r(d.temperature_2m_min[0]) + D, cond: cond(d.weather_code[0]),
+            meta: 'Overnight low' },
+          { title: 'Tomorrow', temp: r(d.temperature_2m_max[1]) + D, cond: cond(d.weather_code[1]),
+            meta: 'High ' + r(d.temperature_2m_max[1]) + D + ' • Low ' + r(d.temperature_2m_min[1]) + D },
+          { title: 'Extended Outlook', temp: '☼', cond: cond(d.weather_code[2]),
+            meta: r(d.temperature_2m_max[2]) + D + ' / ' + r(d.temperature_2m_max[3]) + D + ' / ' + r(d.temperature_2m_max[4]) + D }
+        ]);
+
+        const S = '  •  ';
+        const t = (place ? place.toUpperCase() + '  ' : '') +
+          'CURRENTLY ' + r(c.temperature_2m) + D + ' ' + cond(c.weather_code).toUpperCase() + S +
+          'WIND ' + dir(c.wind_direction_10m) + ' ' + r(c.wind_speed_10m) + ' ' + wLabel.toUpperCase() + S +
+          'HUMIDITY ' + c.relative_humidity_2m + '%' + S +
+          'TONIGHT LOW ' + r(d.temperature_2m_min[0]) + D + S +
+          'TOMORROW HIGH ' + r(d.temperature_2m_max[1]) + D + ' ' + cond(d.weather_code[1]).toUpperCase() + S;
+        setTicker(t);
+      }
+
+      load().catch(() => { /* keep the loading fallback */ });
     })();
   </script>
   <script src="https://www.youtube.com/iframe_api"></script>
