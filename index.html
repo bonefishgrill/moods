@@ -29,46 +29,143 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* ──────────────────────────────────────────────────────────────
+       SKIN SYSTEM
+       Every visual choice below is driven by a custom property. The
+       default :root values ARE the "Classic" Mac skin. Each skin is a
+       `body[data-skin="…"]` block that re-declares these variables (and,
+       where a look can't be expressed as a variable — pinstripes vs a
+       metallic bevel — adds a few targeted element overrides).
+       ────────────────────────────────────────────────────────────── */
     :root {
-      --black: #000;
+      --black: #000;   /* kept for anything still referencing them */
       --white: #fff;
+
+      --font: 'VT323', 'Monaco', 'Courier New', monospace;
+
+      --page-bg: #fff;
+      --page-image: radial-gradient(circle, #000 1px, transparent 1px);
+      --page-size: 8px 8px;
+      --overlay: none;              /* full-viewport pointer-through layer (scanlines, grids) */
+
+      --panel: #fff;                /* window body */
+      --ink: #000;                  /* primary text */
+      --border: #000;
+      --shadow: 4px 4px 0 #000;
+      --window-radius: 0px;
+
+      --title-bg: repeating-linear-gradient(to bottom,
+        #fff 0px, #fff 1px, #000 1px, #000 2px);
+      --title-chip-bg: #fff;        /* the little plate behind the title text */
+      --title-ink: #000;
+      --title-shadow: none;
+
+      --btn-bg: #fff;
+      --btn-ink: #000;
+      --btn-border: #000;
+      --btn-shadow: 2px 2px 0 #000;
+      --btn-radius: 0px;
+      --btn-text-shadow: none;
+      --btn-hover-bg: #fff;
+      --btn-hover-image: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%);
+      --btn-hover-size: 2px 2px;
+      --btn-active-bg: #000;
+      --btn-active-ink: #fff;
+
+      --status-bg: #fff;
+      --status-ink: #000;
     }
 
-    /* Classic Mac desktop dot pattern */
     body {
-      background-color: var(--white);
-      background-image: radial-gradient(circle, #000 1px, transparent 1px);
-      background-size: 8px 8px;
-      font-family: 'VT323', 'Monaco', 'Courier New', monospace;
+      background-color: var(--page-bg);
+      background-image: var(--page-image);
+      background-size: var(--page-size);
+      background-attachment: fixed;
+      font-family: var(--font);
+      color: var(--ink);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding-top: 40px;
       padding-bottom: 40px;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
+    /* Full-viewport decorative overlay (scanlines / neon grid). Inert. */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background: var(--overlay);
+      background-size: var(--overlay-size, auto);
+    }
+
+    /* ── Skin picker ── */
+    .skin-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 6px;
+      padding: 6px 10px;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--window-radius);
+      max-width: 680px;
+      width: 100%;
+    }
+    .skin-bar-label {
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-right: 2px;
+      opacity: 0.7;
+    }
+    .skin-swatch {
+      font-family: var(--font);
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 4px 10px 2px;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: var(--btn-ink);
+      border: 2px solid var(--btn-border);
+      border-radius: var(--btn-radius);
+      text-shadow: var(--btn-text-shadow);
+      line-height: 1.2;
+    }
+    .skin-swatch:hover { filter: brightness(1.08); }
+    .skin-swatch[aria-pressed="true"] {
+      background: var(--btn-active-bg);
+      color: var(--btn-active-ink);
+      text-shadow: none;
+    }
 
     /* ── Window ── */
     .window {
-      margin-top: 32px;
-      background: var(--white);
-      border: 2px solid var(--black);
-      box-shadow: 4px 4px 0 var(--black);
+      margin-top: 8px;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--window-radius);
       width: 100%;
       max-width: 680px;
       image-rendering: pixelated;
     }
 
-    /* Classic Mac title bar — horizontal pinstripes */
+    /* Title bar — pinstripes on Classic, whatever --title-bg says elsewhere */
     .title-bar {
       height: 20px;
-      background: repeating-linear-gradient(
-        to bottom,
-        var(--white) 0px, var(--white) 1px,
-        var(--black) 1px, var(--black) 2px
-      );
-      border-bottom: 2px solid var(--black);
+      background: var(--title-bg);
+      border-bottom: 2px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -77,10 +174,12 @@
     }
 
     .title-bar-title {
-      background: var(--white);
+      background: var(--title-chip-bg);
+      color: var(--title-ink);
+      text-shadow: var(--title-shadow);
       padding: 0 8px;
       font-size: 13px;
-      font-family: 'VT323', 'Monaco', monospace;
+      font-family: var(--font);
       letter-spacing: 0.05em;
       line-height: 1;
     }
@@ -90,13 +189,13 @@
       left: 6px;
       width: 11px;
       height: 11px;
-      border: 1px solid var(--black);
-      background: var(--white);
+      border: 1px solid var(--border);
+      background: var(--panel);
       cursor: pointer;
     }
 
     .close-box:hover {
-      background: var(--black);
+      background: var(--ink);
     }
 
     /* ── Window content ── */
@@ -115,11 +214,13 @@
     }
 
     button {
-      background: var(--white);
-      border: 2px solid var(--black);
-      box-shadow: 2px 2px 0 var(--black);
-      color: var(--black);
-      font-family: 'VT323', 'Monaco', monospace;
+      background: var(--btn-bg);
+      border: 2px solid var(--btn-border);
+      box-shadow: var(--btn-shadow);
+      border-radius: var(--btn-radius);
+      color: var(--btn-ink);
+      text-shadow: var(--btn-text-shadow);
+      font-family: var(--font);
       font-size: 22px;
       letter-spacing: 0.04em;
       padding: 20px 14px 18px;
@@ -132,25 +233,26 @@
     }
 
     button:hover {
-      /* 50% dither pattern for hover state */
-      background-image: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%);
-      background-size: 2px 2px;
+      background-color: var(--btn-hover-bg);
+      background-image: var(--btn-hover-image);
+      background-size: var(--btn-hover-size);
     }
 
     button:active,
     button.active {
-      background: var(--black);
-      color: var(--white);
+      background: var(--btn-active-bg);
+      color: var(--btn-active-ink);
+      text-shadow: none;
       box-shadow: none;
       transform: translate(2px, 2px);
     }
 
     /* Replace the browser's default blue focus ring with something that
-       matches the monochrome look, instead of just removing it (which
-       would break keyboard-only navigation) */
+       matches the skin, instead of just removing it (which would break
+       keyboard-only navigation) */
     button:focus { outline: none; }
     button:focus-visible {
-      outline: 2px dashed var(--black);
+      outline: 2px dashed var(--ink);
       outline-offset: 2px;
     }
 
@@ -165,18 +267,14 @@
 
     .player-window.show {
       max-height: 640px;
-      border-color: var(--black);
-      box-shadow: 4px 4px 0 var(--black);
+      border-color: var(--border);
+      box-shadow: var(--shadow);
     }
 
     .player-title-bar {
       height: 18px;
-      background: repeating-linear-gradient(
-        to bottom,
-        var(--white) 0px, var(--white) 1px,
-        var(--black) 1px, var(--black) 2px
-      );
-      border-bottom: 2px solid var(--black);
+      background: var(--title-bg);
+      border-bottom: 2px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -190,16 +288,18 @@
     }
 
     .player-title-text {
-      background: var(--white);
+      background: var(--title-chip-bg);
+      color: var(--title-ink);
+      text-shadow: var(--title-shadow);
       padding: 0 6px;
       font-size: 12px;
-      font-family: 'VT323', 'Monaco', monospace;
+      font-family: var(--font);
     }
 
     .player-wrap {
       width: 100%;
       aspect-ratio: 16/9;
-      background: var(--black);
+      background: #000;
       position: relative;
     }
 
@@ -224,7 +324,7 @@
     .player-loading {
       position: absolute;
       inset: 0;
-      background: var(--black);
+      background: #000;
       z-index: 2;
       opacity: 1;
       transition: opacity 0.2s ease;
@@ -234,15 +334,15 @@
 
     /* ── Status bar ── */
     .status-bar {
-      border-top: 2px solid var(--black);
+      border-top: 2px solid var(--border);
       padding: 4px 10px;
       font-size: 13px;
-      font-family: 'VT323', 'Monaco', monospace;
-      color: var(--black);
+      font-family: var(--font);
+      color: var(--status-ink);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: var(--white);
+      background: var(--status-bg);
     }
 
     /* ── Resize corner ── */
@@ -254,7 +354,7 @@
       background-size: 2px 2px;
     }
     #hint a {
-      color: var(--black);
+      color: var(--status-ink);
       text-decoration: none;
     }
 
@@ -263,9 +363,9 @@
     }
 
     .hit-counter {
-      font-family: 'VT323', monospace;
+      font-family: var(--font);
       font-size: 13px;
-      color: var(--black);
+      color: var(--status-ink);
       letter-spacing: 0.1em;
     }
 
@@ -277,11 +377,445 @@
       .window { margin-top: 8px; }
       .window-content { padding: 10px; gap: 8px; }
       button { font-size: 14px; padding: 10px 8px 8px; line-height: 1.2; }
+      .skin-bar-label { display: none; }
+      .skin-swatch { font-size: 13px; padding: 3px 8px 1px; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SKINS
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── WINAMP — dark metallic panels, LCD-green readout ── */
+    body[data-skin="winamp"] {
+      --page-bg: #0c0d10;
+      --page-image: none;
+      --panel: #2b2f36;
+      --ink: #c6d2e0;
+      --border: #05070a;
+      --shadow: 3px 3px 0 rgba(0,0,0,0.55);
+      --title-bg: linear-gradient(to bottom, #59647a 0%, #363d4a 48%, #1a1e26 100%);
+      --title-chip-bg: transparent;
+      --title-ink: #dfe8f4;
+      --title-shadow: 0 1px 0 #000;
+      --btn-bg: linear-gradient(to bottom, #3c434d 0%, #262b31 100%);
+      --btn-ink: #21ff66;
+      --btn-border: #05070a;
+      --btn-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 2px 2px 0 rgba(0,0,0,0.5);
+      --btn-text-shadow: 0 0 6px rgba(33,255,102,0.55);
+      --btn-hover-bg: #333941;
+      --btn-hover-image: none;
+      --btn-active-bg: #10231a;
+      --btn-active-ink: #21ff66;
+      --status-bg: #14171b;
+      --status-ink: #21ff66;
+    }
+    body[data-skin="winamp"] button:active,
+    body[data-skin="winamp"] button.active {
+      text-shadow: 0 0 8px rgba(33,255,102,0.8);
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+    }
+    body[data-skin="winamp"] .skin-bar-label { color: #21ff66; opacity: 0.85; }
+
+    /* ── ROCKS — carved granite slabs ── */
+    body[data-skin="rocks"] {
+      --font: 'VT323', 'Georgia', serif;
+      --page-bg: #5f5a53;
+      --page-image:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.06) 0 2px, transparent 3px),
+        radial-gradient(circle at 70% 65%, rgba(0,0,0,0.14) 0 2px, transparent 3px),
+        radial-gradient(circle at 45% 80%, rgba(0,0,0,0.10) 0 1px, transparent 2px),
+        radial-gradient(circle at 85% 20%, rgba(255,255,255,0.05) 0 1px, transparent 2px),
+        linear-gradient(145deg, #6c665e, #4c483f);
+      --page-size: 90px 90px, 120px 120px, 70px 70px, 55px 55px, auto;
+      --panel: #8b857b;
+      --ink: #2a251f;
+      --border: #3a362f;
+      --shadow: 5px 5px 10px rgba(0,0,0,0.45);
+      --window-radius: 8px;
+      --title-bg: linear-gradient(to bottom, #9a948a, #6f6a61);
+      --title-chip-bg: transparent;
+      --title-ink: #23201a;
+      --title-shadow: 0 1px 0 rgba(255,255,255,0.35);
+      --btn-bg: linear-gradient(to bottom, #9c968c 0%, #7c766c 100%);
+      --btn-ink: #2a251f;
+      --btn-border: #46413a;
+      --btn-shadow: inset 0 2px 3px rgba(255,255,255,0.35), inset 0 -3px 4px rgba(0,0,0,0.35), 3px 4px 6px rgba(0,0,0,0.4);
+      --btn-radius: 7px;
+      --btn-text-shadow: 0 1px 0 rgba(255,255,255,0.4), 0 -1px 1px rgba(0,0,0,0.4);
+      --btn-hover-bg: #a49e93;
+      --btn-hover-image: none;
+      --btn-active-bg: #6b665d;
+      --btn-active-ink: #1c1813;
+      --status-bg: #7c766c;
+      --status-ink: #2a251f;
+    }
+
+    /* ── CRT — green phosphor terminal with scanlines ── */
+    body[data-skin="crt"] {
+      --page-bg: #020402;
+      --page-image: radial-gradient(ellipse at center, #041206 0%, #010301 100%);
+      --page-size: cover;
+      --overlay: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,0.35) 2px 4px);
+      --panel: #041206;
+      --ink: #35ff6a;
+      --border: #0c4a1c;
+      --shadow: 0 0 14px rgba(53,255,106,0.25);
+      --title-bg: #06210c;
+      --title-chip-bg: transparent;
+      --title-ink: #35ff6a;
+      --title-shadow: 0 0 6px rgba(53,255,106,0.7);
+      --btn-bg: #05170a;
+      --btn-ink: #35ff6a;
+      --btn-border: #0f5a20;
+      --btn-shadow: 0 0 6px rgba(53,255,106,0.15);
+      --btn-text-shadow: 0 0 6px rgba(53,255,106,0.7);
+      --btn-hover-bg: #0a2c13;
+      --btn-hover-image: none;
+      --btn-active-bg: #35ff6a;
+      --btn-active-ink: #021206;
+      --status-bg: #041206;
+      --status-ink: #35ff6a;
+    }
+    body[data-skin="crt"] button:active,
+    body[data-skin="crt"] button.active { text-shadow: none; }
+
+    /* ── VAPORWAVE — sunset gradient, neon grid, chrome text ── */
+    body[data-skin="vapor"] {
+      --page-bg: #0d0221;
+      --page-image: linear-gradient(165deg, #0d0221 0%, #2a1145 42%, #b5179e 100%);
+      --page-size: cover;
+      --overlay:
+        repeating-linear-gradient(to right, rgba(1,205,254,0.10) 0 1px, transparent 1px 42px),
+        repeating-linear-gradient(to bottom, rgba(1,205,254,0.10) 0 1px, transparent 1px 42px);
+      --panel: rgba(24,10,45,0.82);
+      --ink: #ff9ee0;
+      --border: #05d9e8;
+      --shadow: 0 0 18px rgba(255,113,206,0.5);
+      --window-radius: 4px;
+      --title-bg: linear-gradient(to right, #ff71ce, #01cdfe);
+      --title-chip-bg: transparent;
+      --title-ink: #12002b;
+      --title-shadow: 0 1px 0 rgba(255,255,255,0.4);
+      --btn-bg: linear-gradient(to bottom, rgba(255,113,206,0.16), rgba(1,205,254,0.12));
+      --btn-ink: #01cdfe;
+      --btn-border: #ff71ce;
+      --btn-shadow: 0 0 10px rgba(1,205,254,0.35);
+      --btn-text-shadow: 0 0 8px rgba(1,205,254,0.7);
+      --btn-hover-bg: rgba(255,113,206,0.25);
+      --btn-hover-image: none;
+      --btn-active-bg: #ff71ce;
+      --btn-active-ink: #12002b;
+      --status-bg: rgba(24,10,45,0.9);
+      --status-ink: #ff9ee0;
+    }
+
+    /* ── AOL — Win95-era chrome, royal blue desktop, that AOL yellow ── */
+    body[data-skin="aol"] {
+      --font: Tahoma, 'MS Sans Serif', Geneva, Verdana, sans-serif;
+      --page-bg: #1c3f94;
+      --page-image: linear-gradient(180deg, #2a54b8, #0e2a6b);
+      --page-size: cover;
+      --panel: #d4d0c8;
+      --ink: #000;
+      --border: #000;
+      --shadow: 3px 3px 0 rgba(0,0,0,0.45);
+      --title-bg: linear-gradient(to right, #0a2c8a, #2f6fd8);
+      --title-chip-bg: transparent;
+      --title-ink: #fff;
+      --title-shadow: none;
+      --btn-bg: #ece9d8;
+      --btn-ink: #0a2c8a;
+      --btn-border: #808080;
+      --btn-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080, 2px 2px 0 rgba(0,0,0,0.25);
+      --btn-radius: 0px;
+      --btn-text-shadow: none;
+      --btn-hover-bg: #fffbe6;
+      --btn-hover-image: none;
+      --btn-active-bg: #ffd400;
+      --btn-active-ink: #0a2c8a;
+      --status-bg: #d4d0c8;
+      --status-ink: #0a2c8a;
+    }
+    body[data-skin="aol"] .title-bar-title { font-weight: bold; letter-spacing: 0; }
+    body[data-skin="aol"] .skin-bar-label { color: #ffd400; opacity: 1; }
+
+    /* ── WINDOWS 98 — teal desktop, silver bevels, blue gradient title ── */
+    body[data-skin="win98"] {
+      --font: Tahoma, 'MS Sans Serif', Geneva, Verdana, sans-serif;
+      --page-bg: #008080;
+      --page-image: none;
+      --panel: #c0c0c0;
+      --ink: #000;
+      --border: #000;
+      --shadow: 3px 3px 0 rgba(0,0,0,0.4);
+      --title-bg: linear-gradient(to right, #000080, #1084d0);
+      --title-chip-bg: transparent;
+      --title-ink: #fff;
+      --title-shadow: none;
+      --btn-bg: #c0c0c0;
+      --btn-ink: #000;
+      --btn-border: #808080;
+      --btn-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #404040, inset 2px 2px 0 #dfdfdf, inset -2px -2px 0 #808080;
+      --btn-radius: 0px;
+      --btn-text-shadow: none;
+      --btn-hover-bg: #cdcdcd;
+      --btn-hover-image: none;
+      --btn-active-bg: #c0c0c0;
+      --btn-active-ink: #000;
+      --status-bg: #c0c0c0;
+      --status-ink: #000;
+    }
+    body[data-skin="win98"] .title-bar-title { font-weight: bold; letter-spacing: 0; }
+    body[data-skin="win98"] button:active,
+    body[data-skin="win98"] button.active {
+      box-shadow: inset 1px 1px 0 #404040, inset -1px -1px 0 #fff;
+      transform: translate(1px, 1px);
+    }
+
+    /* ── GEOCITIES — Web 1.0: starfield tile, Comic Sans, neon everything ── */
+    body[data-skin="geocities"] {
+      --font: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', cursive;
+      --page-bg: #000010;
+      --page-image:
+        radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+        radial-gradient(1px 1px at 80px 70px, #9ff, transparent),
+        radial-gradient(1px 1px at 130px 40px, #fff, transparent),
+        radial-gradient(2px 2px at 160px 120px, #ff9, transparent),
+        radial-gradient(1px 1px at 50px 160px, #fff, transparent);
+      --page-size: 200px 200px;
+      --panel: #000033;
+      --ink: #00ff00;
+      --border: #ff00ff;
+      --shadow: 0 0 0 2px #00ffff, 6px 6px 0 #ff00ff;
+      --window-radius: 0px;
+      --title-bg: linear-gradient(to right, #ff00ff, #00ffff, #ffff00);
+      --title-chip-bg: transparent;
+      --title-ink: #000;
+      --title-shadow: none;
+      --btn-bg: #000066;
+      --btn-ink: #ffff00;
+      --btn-border: #00ffff;
+      --btn-shadow: 3px 3px 0 #ff00ff;
+      --btn-radius: 0px;
+      --btn-text-shadow: 0 0 4px rgba(255,255,0,0.6);
+      --btn-hover-bg: #330066;
+      --btn-hover-image: none;
+      --btn-active-bg: #ff00ff;
+      --btn-active-ink: #00ffff;
+      --status-bg: #000033;
+      --status-ink: #00ff00;
+    }
+    body[data-skin="geocities"] .title-bar-title { font-weight: bold; }
+
+    /* ── AQUA — Mac OS X 2001: pinstripes, glossy gel buttons ── */
+    body[data-skin="aqua"] {
+      --font: 'Lucida Grande', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --page-bg: #dfe7f0;
+      --page-image: repeating-linear-gradient(to bottom, rgba(255,255,255,0.6) 0 1px, rgba(150,180,220,0.28) 1px 2px);
+      --page-size: auto;
+      --panel: #ffffff;
+      --ink: #1a1a1a;
+      --border: #8a9bb5;
+      --shadow: 0 10px 30px rgba(40,70,120,0.35);
+      --window-radius: 10px;
+      --title-bg: linear-gradient(to bottom, #fbfdff 0%, #d3e0f2 50%, #b9cbe8 100%);
+      --title-chip-bg: transparent;
+      --title-ink: #2b3a53;
+      --title-shadow: 0 1px 0 rgba(255,255,255,0.8);
+      --btn-bg: linear-gradient(to bottom, #ffffff 0%, #eaf1fb 48%, #cfe0f5 52%, #eaf3ff 100%);
+      --btn-ink: #16335e;
+      --btn-border: #9db6d6;
+      --btn-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 5px rgba(40,70,120,0.25);
+      --btn-radius: 14px;
+      --btn-text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+      --btn-hover-bg: #eaf3ff;
+      --btn-hover-image: none;
+      --btn-active-bg: linear-gradient(to bottom, #3a86e0, #1e64c8);
+      --btn-active-ink: #ffffff;
+      --status-bg: #eef3fa;
+      --status-ink: #33465f;
+    }
+    body[data-skin="aqua"] button:active,
+    body[data-skin="aqua"] button.active {
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+      text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+    }
+
+    /* ── GAME BOY — 4-shade DMG green LCD with dot-matrix grid ── */
+    body[data-skin="gameboy"] {
+      --font: 'VT323', 'Courier New', monospace;
+      --page-bg: #8bac0f;
+      --page-image:
+        repeating-linear-gradient(to bottom, rgba(15,56,15,0.10) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(to right, rgba(15,56,15,0.10) 0 1px, transparent 1px 3px);
+      --page-size: 3px 3px;
+      --panel: #9bbc0f;
+      --ink: #0f380f;
+      --border: #0f380f;
+      --shadow: 4px 4px 0 #306230;
+      --window-radius: 0px;
+      --title-bg: #306230;
+      --title-chip-bg: transparent;
+      --title-ink: #9bbc0f;
+      --title-shadow: none;
+      --btn-bg: #8bac0f;
+      --btn-ink: #0f380f;
+      --btn-border: #0f380f;
+      --btn-shadow: 3px 3px 0 #306230;
+      --btn-radius: 0px;
+      --btn-text-shadow: none;
+      --btn-hover-bg: #9bbc0f;
+      --btn-hover-image: none;
+      --btn-active-bg: #0f380f;
+      --btn-active-ink: #9bbc0f;
+      --status-bg: #8bac0f;
+      --status-ink: #0f380f;
+    }
+
+    /* ── THE WEATHER CHANNEL — Local on the 8s. The playing video fills the
+       whole screen behind translucent blue graphics and a scrolling ticker.
+       NOTE: no ancestor of #playerWrap may use transform/filter/opacity here,
+       or the position:fixed background video would be trapped in its box. ── */
+    body[data-skin="weather"] {
+      --font: 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
+      --page-bg: #0a1e5e;
+      --page-image: linear-gradient(180deg, #12307f 0%, #0a1e5e 55%, #061444 100%);
+      --page-size: cover;
+      --panel: rgba(8, 26, 82, 0.80);
+      --ink: #eaf1ff;
+      --border: #0b1a4a;
+      --shadow: 0 6px 24px rgba(0,0,0,0.5);
+      --window-radius: 6px;
+      --title-bg: linear-gradient(to bottom, #1e49b8, #0c266f);
+      --title-chip-bg: transparent;
+      --title-ink: #ffd21e;
+      --title-shadow: 0 1px 2px rgba(0,0,0,0.6);
+      --btn-bg: linear-gradient(to bottom, rgba(24,58,140,0.92), rgba(10,28,86,0.92));
+      --btn-ink: #ffffff;
+      --btn-border: #2a52c9;
+      --btn-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 6px rgba(0,0,0,0.4);
+      --btn-radius: 4px;
+      --btn-text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+      --btn-hover-bg: rgba(30,73,184,0.95);
+      --btn-hover-image: none;
+      --btn-active-bg: #ffd21e;
+      --btn-active-ink: #0a1e5e;
+      --status-bg: rgba(8,26,82,0.9);
+      --status-ink: #ffd21e;
+      padding-bottom: 56px;
+    }
+    body[data-skin="weather"] .title-bar-title { font-weight: 800; letter-spacing: 0.06em; }
+
+    /* Playing video → full-screen background layer */
+    body[data-skin="weather"] .player-window.show {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      max-height: none;
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+      overflow: hidden;
+    }
+    body[data-skin="weather"] .player-window .player-title-bar { display: none; }
+    body[data-skin="weather"] .player-window.show .player-wrap {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+    }
+    body[data-skin="weather"] .player-window.show .player-slot iframe {
+      top: 50%;
+      left: 50%;
+      width: 100vw;
+      height: 56.25vw;         /* 16:9 → cover the viewport, no distortion */
+      min-width: 177.78vh;
+      min-height: 100vh;
+      transform: translate(-50%, -50%);
+      /* purely a backdrop — let YouTube's chrome auto-hide and pass clicks
+         through to the mood buttons on top */
+      pointer-events: none;
+    }
+    /* Tint the video so the blue UI stays readable on top of it */
+    body[data-skin="weather"] .player-window.show::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(6,20,68,0.30), rgba(6,20,68,0.62));
+      pointer-events: none;
+      z-index: 3;
+    }
+    /* Player is pulled out of the grid flow → keep the buttons laid out normally */
+    body[data-skin="weather"] #buttons > [data-mood] {
+      grid-row: auto !important;
+      grid-column: auto !important;
+    }
+
+    /* ── Weather Channel scrolling ticker ── */
+    #wxTicker { display: none; }
+    body[data-skin="weather"] #wxTicker {
+      display: flex;
+      align-items: stretch;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: 34px;
+      z-index: 9997;
+      background: linear-gradient(to bottom, #0c266f, #061444);
+      border-top: 2px solid #ffd21e;
+      overflow: hidden;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    .wx-ticker-tag {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      background: #ffd21e;
+      color: #0a1e5e;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .wx-ticker-track {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      animation: wxscroll 45s linear infinite;
+    }
+    .wx-ticker-track span { white-space: nowrap; }
+    @keyframes wxscroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
     }
   </style>
 </head>
 <body>
+  <script>
+    // Apply the saved skin before first paint to avoid a Classic-skin flash.
+    try {
+      var s = localStorage.getItem('moods-skin');
+      if (s && s !== 'classic') document.body.dataset.skin = s;
+    } catch (e) {}
+  </script>
 
+  <!-- Skin picker — buttons injected by JS from the SKINS list -->
+  <div class="skin-bar" id="skinBar">
+    <span class="skin-bar-label">skin:</span>
+  </div>
+
+  <!-- Weather Channel scrolling ticker (only visible in the weather skin) -->
+  <div id="wxTicker" aria-hidden="true">
+    <div class="wx-ticker-tag">LOCAL ON THE 8s</div>
+    <div class="wx-ticker-track">
+      <span>CURRENT CONDITIONS&nbsp;&nbsp;72&deg;F&nbsp;&nbsp;MOSTLY MOODY&nbsp;&nbsp;&bull;&nbsp;&nbsp;WIND&nbsp;NW 4 MPH&nbsp;&nbsp;&bull;&nbsp;&nbsp;HUMIDITY 61%&nbsp;&nbsp;&bull;&nbsp;&nbsp;BAROMETER 30.08 &amp; RISING&nbsp;&nbsp;&bull;&nbsp;&nbsp;TONIGHT&nbsp;&nbsp;CALM &amp; AMBIENT&nbsp;&nbsp;LOW 58&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;TOMORROW&nbsp;&nbsp;A CHANCE OF GROOVE&nbsp;&nbsp;HIGH 74&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;EXTENDED OUTLOOK&nbsp;&nbsp;VIBES CONTINUING THROUGH THE WEEKEND&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
+      <span>CURRENT CONDITIONS&nbsp;&nbsp;72&deg;F&nbsp;&nbsp;MOSTLY MOODY&nbsp;&nbsp;&bull;&nbsp;&nbsp;WIND&nbsp;NW 4 MPH&nbsp;&nbsp;&bull;&nbsp;&nbsp;HUMIDITY 61%&nbsp;&nbsp;&bull;&nbsp;&nbsp;BAROMETER 30.08 &amp; RISING&nbsp;&nbsp;&bull;&nbsp;&nbsp;TONIGHT&nbsp;&nbsp;CALM &amp; AMBIENT&nbsp;&nbsp;LOW 58&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;TOMORROW&nbsp;&nbsp;A CHANCE OF GROOVE&nbsp;&nbsp;HIGH 74&deg;&nbsp;&nbsp;&bull;&nbsp;&nbsp;EXTENDED OUTLOOK&nbsp;&nbsp;VIBES CONTINUING THROUGH THE WEEKEND&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
+    </div>
+  </div>
 
   <!-- Main window -->
   <div class="window">
@@ -323,6 +857,60 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
     }
+  </script>
+  <script>
+    // ── Skin switching ── choice persists across visits via localStorage.
+    (function () {
+      // [id, label]. `id` drives the body[data-skin] attribute; classic is the
+      // default look (no attribute). Order here is the order in the picker.
+      const SKINS = [
+        ['classic',   'classic'],
+        ['winamp',    'winamp'],
+        ['aol',       'aol'],
+        ['weather',   'weather ch'],
+        ['win98',     'win98'],
+        ['crt',       'terminal'],
+        ['geocities', 'geocities'],
+        ['aqua',      'aqua'],
+        ['vapor',     'vapor'],
+        ['gameboy',   'game boy'],
+        ['rocks',     'rocks'],
+      ];
+      const IDS = SKINS.map(s => s[0]);
+      const KEY = 'moods-skin';
+      const bar = document.getElementById('skinBar');
+
+      // Build the picker buttons
+      SKINS.forEach(([id, label]) => {
+        const b = document.createElement('button');
+        b.className = 'skin-swatch';
+        b.dataset.skinBtn = id;
+        b.textContent = label;
+        b.title = label;
+        bar.appendChild(b);
+      });
+
+      function applySkin(skin) {
+        if (!IDS.includes(skin)) skin = 'classic';
+        // Classic is the default (no attribute), everything else is data-skin.
+        if (skin === 'classic') document.body.removeAttribute('data-skin');
+        else document.body.dataset.skin = skin;
+        bar.querySelectorAll('[data-skin-btn]').forEach(b => {
+          b.setAttribute('aria-pressed', String(b.dataset.skinBtn === skin));
+        });
+        try { localStorage.setItem(KEY, skin); } catch (e) {}
+        if (window.gtag) gtag('event', 'skin_change', { skin });
+      }
+
+      bar.addEventListener('click', e => {
+        const btn = e.target.closest('[data-skin-btn]');
+        if (btn) applySkin(btn.dataset.skinBtn);
+      });
+
+      let saved = 'classic';
+      try { saved = localStorage.getItem(KEY) || 'classic'; } catch (e) {}
+      applySkin(saved);
+    })();
   </script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
