@@ -713,9 +713,12 @@
        or the position:fixed background video would be trapped in its box. ── */
     body[data-skin="weather"] {
       --font: 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
-      --page-bg: #0a1e5e;
-      --page-image: linear-gradient(180deg, #12307f 0%, #0a1e5e 55%, #061444 100%);
-      --page-size: cover;
+      /* Solid color, NOT a fixed background image: a `background-attachment:
+         fixed` image paints over the z-index:-2 background video and hides it.
+         A solid color doesn't, so the playing video shows through. */
+      --page-bg: #06123a;
+      --page-image: none;
+      --page-size: auto;
       --panel: rgba(8, 26, 82, 0.80);
       --ink: #eaf1ff;
       --border: #0b1a4a;
@@ -771,28 +774,18 @@
       display: block;
       position: fixed;
       inset: 0;
-      z-index: -1;
+      z-index: -1;                 /* over the video (-2), under the moods UI */
       overflow: hidden;
+      pointer-events: none;
       font-family: 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
-      background:
-        linear-gradient(180deg, #2b2560 0%, #3b3178 26%, #6455a4 52%, #b58a6a 78%, #d8a86e 100%);
+      /* Transparent through the middle so the PLAYING video shows; darkened
+         at top and bottom so the weather graphics stay legible over it. */
+      background: linear-gradient(to bottom,
+        rgba(6,18,60,0.74) 0%, rgba(6,18,60,0.34) 15%, rgba(6,18,60,0) 33%,
+        rgba(6,18,60,0) 55%, rgba(6,18,60,0.42) 82%, rgba(6,18,60,0.74) 100%);
     }
-    .wx-clouds {
-      position: absolute;
-      inset: -25%;
-      background:
-        radial-gradient(ellipse 38% 20% at 18% 26%, rgba(255,255,255,0.28), transparent 70%),
-        radial-gradient(ellipse 46% 24% at 58% 18%, rgba(255,255,255,0.20), transparent 70%),
-        radial-gradient(ellipse 42% 22% at 82% 36%, rgba(255,255,255,0.24), transparent 70%),
-        radial-gradient(ellipse 52% 26% at 38% 58%, rgba(235,225,255,0.16), transparent 70%),
-        radial-gradient(ellipse 48% 24% at 74% 70%, rgba(255,238,210,0.18), transparent 70%);
-      filter: blur(8px);
-      animation: wxdrift 70s ease-in-out infinite alternate;
-    }
-    @keyframes wxdrift {
-      from { transform: translateX(-3%) translateY(-1%); }
-      to   { transform: translateX(3%)  translateY(1%); }
-    }
+    /* Clouds are replaced by the live video background in this layout. */
+    body[data-skin="weather"] .wx-clouds { display: none; }
     /* faint CRT scanlines over the whole scene */
     .wx-scanlines {
       position: absolute;
@@ -802,11 +795,10 @@
     }
     .wx-scene { position: absolute; inset: 0; }
 
-    /* Channel bug, top center */
+    /* Channel bug, top-left corner */
     .wx-bug {
       position: absolute;
-      top: 22px; left: 50%;
-      transform: translateX(-50%);
+      top: 18px; left: 20px;
       background: linear-gradient(#1c48b8, #0c2c86);
       color: #fff;
       font-weight: 800;
@@ -817,26 +809,25 @@
       padding: 5px 9px;
       border: 1px solid rgba(255,255,255,0.5);
       border-radius: 3px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     }
     .wx-heading {
       position: absolute;
-      top: 70px; left: 42%; right: 2%;
+      top: 22px; left: 0; right: 0;
       text-align: center;
       color: #fff;
       font-weight: 800;
-      font-size: 30px;
+      font-size: 26px;
       letter-spacing: 0.02em;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.55);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.7);
     }
 
-    /* Radar / compass sweep, over the open right-hand stage */
+    /* Radar / compass sweep — small inset, top-right corner */
     .wx-radar {
       position: absolute;
-      left: 67%; top: 48%;
-      transform: translate(-50%, -50%);
-      width: 300px; height: 300px;
-      max-width: 44vw; max-height: 44vw;
+      right: 22px; top: 72px;
+      width: 150px; height: 150px;
+      max-width: 30vw; max-height: 30vw;
     }
     .wx-radar-map {
       position: absolute; inset: 14%;
@@ -880,34 +871,42 @@
     }
     @keyframes wxsweep { to { transform: rotate(360deg); } }
 
-    /* Rotating forecast panels, lower third */
+    /* Rotating forecast as a translucent lower-third card over the video */
     .wx-panels {
       position: absolute;
-      left: 67%;
-      bottom: 92px;
-      transform: translateX(-50%);
-      width: min(520px, 44vw);
-      height: 132px;
+      right: 3%;
+      bottom: 100px;
+      width: min(430px, 54vw);
+      height: 150px;
+      background: linear-gradient(to bottom, rgba(18,42,116,0.82), rgba(8,22,78,0.86));
+      border: 1px solid rgba(130,170,240,0.55);
+      border-radius: 8px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.5);
+      overflow: hidden;
     }
     .wx-panel {
       position: absolute;
       inset: 0;
+      padding: 12px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       text-align: center;
       color: #fff;
       opacity: 0;
       transition: opacity 0.6s ease;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.55);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     }
     .wx-panel.active { opacity: 1; }
     .wx-panel-title {
-      font-size: 22px; font-weight: 800;
+      font-size: 18px; font-weight: 800;
       letter-spacing: 0.04em;
       color: #ffd21e;
       text-transform: uppercase;
     }
-    .wx-panel-temp { font-size: 52px; font-weight: 800; line-height: 1.05; }
-    .wx-panel-cond { font-size: 24px; font-weight: 700; }
-    .wx-panel-meta { font-size: 15px; font-weight: 600; opacity: 0.92; margin-top: 3px; }
+    .wx-panel-temp { font-size: 44px; font-weight: 800; line-height: 1.08; }
+    .wx-panel-cond { font-size: 20px; font-weight: 700; }
+    .wx-panel-meta { font-size: 13px; font-weight: 600; opacity: 0.92; margin-top: 2px; }
     body[data-skin="weather"] .player-window .player-title-bar { display: none; }
     body[data-skin="weather"] .player-window.show .player-wrap {
       width: 100vw;
