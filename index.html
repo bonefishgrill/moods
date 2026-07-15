@@ -743,49 +743,40 @@
       padding-bottom: 56px;
     }
     body[data-skin="weather"] .title-bar-title { font-weight: 800; letter-spacing: 0.06em; }
-    /* Dock the moods UI to the left as a translucent forecast panel so the
-       WeatherStar scene (radar + rotating forecast) fills the rest. */
-    body[data-skin="weather"] .skin-bar,
-    body[data-skin="weather"] .window {
-      align-self: flex-start;
-      margin-left: min(5vw, 56px);
-      max-width: 430px;
-    }
-    body[data-skin="weather"] .window { margin-top: 6px; }
 
-    /* Playing video → sits BEHIND the retro backdrop (z-index -2). It's
-       hidden from view but keeps playing, so your chosen mood is the
-       soundtrack over the weather graphics — just like Local on the 8s. */
-    body[data-skin="weather"] .player-window.show {
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      max-height: none;
-      border: none;
-      box-shadow: none;
-      border-radius: 0;
-      overflow: hidden;
-    }
-    body[data-skin="weather"] .player-window.show::after { display: none; }
+    /* The video opens in the normal inline pop-down player — exactly like every
+       other skin. The WeatherStar scene sits behind the window as the "channel"
+       you've got on in the background (sky, clouds, radar, forecast, ticker). */
 
-    /* ── Retro WeatherStar backdrop ── */
+    /* ── Retro WeatherStar backdrop (full-screen, behind the moods window) ── */
     #wxBackdrop { display: none; }
     body[data-skin="weather"] #wxBackdrop {
       display: block;
       position: fixed;
       inset: 0;
-      z-index: -1;                 /* over the video (-2), under the moods UI */
+      z-index: -1;
       overflow: hidden;
       pointer-events: none;
       font-family: 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
-      /* Transparent through the middle so the PLAYING video shows; darkened
-         at top and bottom so the weather graphics stay legible over it. */
-      background: linear-gradient(to bottom,
-        rgba(6,18,60,0.74) 0%, rgba(6,18,60,0.34) 15%, rgba(6,18,60,0) 33%,
-        rgba(6,18,60,0) 55%, rgba(6,18,60,0.42) 82%, rgba(6,18,60,0.74) 100%);
+      background:
+        linear-gradient(180deg, #2b2560 0%, #3b3178 26%, #6455a4 52%, #b58a6a 78%, #d8a86e 100%);
     }
-    /* Clouds are replaced by the live video background in this layout. */
-    body[data-skin="weather"] .wx-clouds { display: none; }
+    .wx-clouds {
+      position: absolute;
+      inset: -25%;
+      background:
+        radial-gradient(ellipse 38% 20% at 18% 26%, rgba(255,255,255,0.28), transparent 70%),
+        radial-gradient(ellipse 46% 24% at 58% 18%, rgba(255,255,255,0.20), transparent 70%),
+        radial-gradient(ellipse 42% 22% at 82% 36%, rgba(255,255,255,0.24), transparent 70%),
+        radial-gradient(ellipse 52% 26% at 38% 58%, rgba(235,225,255,0.16), transparent 70%),
+        radial-gradient(ellipse 48% 24% at 74% 70%, rgba(255,238,210,0.18), transparent 70%);
+      filter: blur(8px);
+      animation: wxdrift 70s ease-in-out infinite alternate;
+    }
+    @keyframes wxdrift {
+      from { transform: translateX(-3%) translateY(-1%); }
+      to   { transform: translateX(3%)  translateY(1%); }
+    }
     /* faint CRT scanlines over the whole scene */
     .wx-scanlines {
       position: absolute;
@@ -907,38 +898,10 @@
     .wx-panel-temp { font-size: 44px; font-weight: 800; line-height: 1.08; }
     .wx-panel-cond { font-size: 20px; font-weight: 700; }
     .wx-panel-meta { font-size: 13px; font-weight: 600; opacity: 0.92; margin-top: 2px; }
-    body[data-skin="weather"] .player-window .player-title-bar { display: none; }
-    body[data-skin="weather"] .player-window.show .player-wrap {
-      width: 100vw;
-      height: 100vh;
-      aspect-ratio: auto;
-    }
-    body[data-skin="weather"] .player-window.show .player-slot iframe {
-      top: 50%;
-      left: 50%;
-      width: 100vw;
-      height: 56.25vw;         /* 16:9 → cover the viewport, no distortion */
-      min-width: 177.78vh;
-      min-height: 100vh;
-      transform: translate(-50%, -50%);
-      /* purely a backdrop — let YouTube's chrome auto-hide and pass clicks
-         through to the mood buttons on top */
-      pointer-events: none;
-    }
-    /* Tint the video so the blue UI stays readable on top of it */
-    body[data-skin="weather"] .player-window.show::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(6,20,68,0.30), rgba(6,20,68,0.62));
-      pointer-events: none;
-      z-index: 3;
-    }
-    /* Player is pulled out of the grid flow → keep the buttons laid out normally */
-    body[data-skin="weather"] #buttons > [data-mood] {
-      grid-row: auto !important;
-      grid-column: auto !important;
-    }
+    /* Hide the big centered heading in this layout — the ticker and forecast
+       card already carry the city + conditions, and it would clash with the
+       centered skin picker at the top. */
+    body[data-skin="weather"] .wx-heading { display: none; }
 
     /* ── Weather Channel scrolling ticker ── */
     #wxTicker { display: none; }
