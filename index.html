@@ -517,36 +517,6 @@
     body[data-skin="crt"] button:active,
     body[data-skin="crt"] button.active { text-shadow: none; }
 
-    /* ── VAPORWAVE — sunset gradient, neon grid, chrome text ── */
-    body[data-skin="vapor"] {
-      --page-bg: #0d0221;
-      --page-image: linear-gradient(165deg, #0d0221 0%, #2a1145 42%, #b5179e 100%);
-      --page-size: cover;
-      --overlay:
-        repeating-linear-gradient(to right, rgba(1,205,254,0.10) 0 1px, transparent 1px 42px),
-        repeating-linear-gradient(to bottom, rgba(1,205,254,0.10) 0 1px, transparent 1px 42px);
-      --panel: rgba(24,10,45,0.82);
-      --ink: #ff9ee0;
-      --border: #05d9e8;
-      --shadow: 0 0 18px rgba(255,113,206,0.5);
-      --window-radius: 4px;
-      --title-bg: linear-gradient(to right, #ff71ce, #01cdfe);
-      --title-chip-bg: transparent;
-      --title-ink: #12002b;
-      --title-shadow: 0 1px 0 rgba(255,255,255,0.4);
-      --btn-bg: linear-gradient(to bottom, rgba(255,113,206,0.16), rgba(1,205,254,0.12));
-      --btn-ink: #01cdfe;
-      --btn-border: #ff71ce;
-      --btn-shadow: 0 0 10px rgba(1,205,254,0.35);
-      --btn-text-shadow: 0 0 8px rgba(1,205,254,0.7);
-      --btn-hover-bg: rgba(255,113,206,0.25);
-      --btn-hover-image: none;
-      --btn-active-bg: #ff71ce;
-      --btn-active-ink: #12002b;
-      --status-bg: rgba(24,10,45,0.9);
-      --status-ink: #ff9ee0;
-    }
-
     /* ── AOL — Win95-era chrome, royal blue desktop, that AOL yellow ── */
     body[data-skin="aol"] {
       --font: Tahoma, 'MS Sans Serif', Geneva, Verdana, sans-serif;
@@ -1099,26 +1069,6 @@
     body[data-skin="aqua"] .close-box::before { left: 16px; background: #febc2e; border: 1px solid #e0a325; }
     body[data-skin="aqua"] .close-box::after  { left: 32px; background: #28c840; border: 1px solid #22a934; }
 
-    /* ── Vaporwave: retro sun behind everything ── */
-    #vaporSun { display: none; }
-    body[data-skin="vapor"] #vaporSun {
-      display: block;
-      position: fixed;
-      z-index: -1;
-      left: 50%; top: 26%;
-      transform: translate(-50%, -50%);
-      width: min(360px, 70vw); aspect-ratio: 1;
-      border-radius: 50%;
-      background: linear-gradient(#fff59d 0%, #ff8ac4 46%, #d838f0 100%);
-      -webkit-mask:
-        linear-gradient(#000 0 0) top / 100% 52% no-repeat,
-        repeating-linear-gradient(#000 0 7px, transparent 7px 12px) bottom / 100% 48% no-repeat;
-      mask:
-        linear-gradient(#000 0 0) top / 100% 52% no-repeat,
-        repeating-linear-gradient(#000 0 7px, transparent 7px 12px) bottom / 100% 48% no-repeat;
-      filter: drop-shadow(0 0 44px rgba(255,110,199,0.55));
-    }
-
     /* ── Game Boy: gray DMG case + dark-bezel green screen ── */
     body[data-skin="gameboy"] .window {
       border: 4px solid #23231f;
@@ -1153,9 +1103,6 @@
       if (s && s !== 'classic') document.body.dataset.skin = s;
     } catch (e) {}
   </script>
-
-  <!-- Vaporwave retro sun (vapor skin only) -->
-  <div id="vaporSun" aria-hidden="true"></div>
 
   <!-- DOS prompt line (terminal skin only) -->
   <div id="dosPrompt" aria-hidden="true">C:\MOODS&gt; play mood <span class="dos-cursor">█</span></div>
@@ -1279,7 +1226,6 @@
         ['crt',       'terminal'],
         ['geocities', 'geocities'],
         ['aqua',      'aqua'],
-        ['vapor',     'vapor'],
         ['gameboy',   'game boy'],
         ['rocks',     'rocks'],
       ];
