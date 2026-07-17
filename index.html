@@ -304,6 +304,20 @@
       position: relative;
     }
 
+    /* Nudge for when YouTube blocks the first autoplay */
+    .player-hint {
+      padding: 5px 10px 6px;
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.2;
+      text-align: center;
+      color: var(--status-ink);
+      background: var(--status-bg);
+      border-top: 2px solid var(--border);
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+    }
+
     /* Two player slots: whichever is "active" is visible; the other sits
        hidden, buffering whatever mood the user last hovered/touched, ready
        to be swapped in instantly on a matching click. */
@@ -1096,13 +1110,6 @@
   </style>
 </head>
 <body>
-  <script>
-    // Apply the saved skin before first paint to avoid a Classic-skin flash.
-    try {
-      var s = localStorage.getItem('moods-skin');
-      if (s && s !== 'classic') document.body.dataset.skin = s;
-    } catch (e) {}
-  </script>
 
   <!-- DOS prompt line (terminal skin only) -->
   <div id="dosPrompt" aria-hidden="true">C:\MOODS&gt; play mood <span class="dos-cursor">█</span></div>
@@ -1188,6 +1195,7 @@
             <div class="player-slot" id="slotB"><div id="playerB"></div></div>
             <div class="player-loading" id="playerLoading"></div>
           </div>
+          <div class="player-hint">keep clicking on the video until something clicks</div>
         </div>
       </div>
 
@@ -1266,9 +1274,9 @@
       // Let the mood buttons (in the other script) switch skins too.
       window.__moodsSetSkin = applySkin;
 
-      let saved = 'classic';
-      try { saved = localStorage.getItem(KEY) || 'classic'; } catch (e) {}
-      applySkin(saved);
+      // Always start on the Classic skin (a fresh open never restores a
+      // previously chosen skin).
+      applySkin('classic');
     })();
   </script>
   <script>
