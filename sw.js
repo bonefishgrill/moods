@@ -1,5 +1,5 @@
-const CACHE = 'moods-v2';
-const ASSETS = ['/', '/index.html', '/playlists.json'];
+const CACHE = 'moods-v3';
+const ASSETS = ['/', '/index.html', '/playlists.json', '/privacy/', '/privacy/index.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));

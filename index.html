@@ -1200,7 +1200,7 @@
       </div>
 
       <div class="status-bar">
-        <span id="hint"><a href="https://ben-schechter.com">created by ben schechter</a></span>
+        <span id="hint"><a href="https://ben-schechter.com">created by ben schechter</a> · <a href="/privacy/">privacy</a></span>
         <span class="hit-counter" id="visitCount"></span>
         <span id="clock"></span>
       </div>
@@ -1464,6 +1464,32 @@
     function inactiveKey() { return activeKey === 'A' ? 'B' : 'A'; }
     function activePlayer() { return players[activeKey]; }
 
+    function setMediaPlaybackState(state) {
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = state;
+    }
+
+    function updateMediaSession() {
+      if (!('mediaSession' in navigator) || !currentMood) return;
+      const label = (MOODS[currentMood] && MOODS[currentMood].label) || currentMood;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: label,
+        artist: 'moods.computer',
+        album: 'Moods'
+      });
+    }
+
+    if ('mediaSession' in navigator) {
+      const mediaActions = {
+        play: () => activePlayer() && activePlayer().playVideo(),
+        pause: () => activePlayer() && activePlayer().pauseVideo(),
+        nexttrack: () => playNext(),
+        stop: () => document.getElementById('playerClose').click()
+      };
+      Object.entries(mediaActions).forEach(([action, handler]) => {
+        try { navigator.mediaSession.setActionHandler(action, handler); } catch (e) {}
+      });
+    }
+
     function hidePlayer() {
       document.getElementById('playerWrap').classList.remove('show');
     }
@@ -1568,8 +1594,10 @@
           onStateChange: (e) => {
             const isActive = key === activeKey;
             if (e.data === YT.PlayerState.PLAYING) {
-              if (isActive) { clearStall(); showPlayer(); hideLoading(); }
+              if (isActive) { clearStall(); showPlayer(); hideLoading(); setMediaPlaybackState('playing'); }
               else { clearPreloadStall(); preloadReady = true; }
+            } else if (e.data === YT.PlayerState.PAUSED && isActive) {
+              setMediaPlaybackState('paused');
             } else if (e.data === YT.PlayerState.ENDED && isActive) {
               clearStall(); playNext();
             }
@@ -1690,6 +1718,7 @@
 
       positionPlayer(btn);
       currentMood = mood;
+      updateMediaSession();
       showPlayer();
       requestWakeLock();
 
@@ -1740,9 +1769,11 @@
     document.getElementById('playerClose').addEventListener('click', () => {
       hidePlayer();
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
-      document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a>';
+      document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a> · <a href="/privacy/">privacy</a>';
       clearStall();
       if (activePlayer() && activePlayer().stopVideo) activePlayer().stopVideo();
+      setMediaPlaybackState('none');
+      if ('mediaSession' in navigator) navigator.mediaSession.metadata = null;
       releaseWakeLock();
       currentMood = null;
     });
