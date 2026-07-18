@@ -104,6 +104,30 @@
       background-size: var(--overlay-size, auto);
     }
 
+    /* ── Site title ── */
+    .site-title {
+      margin: 0 0 10px;
+      padding-right: 0.12em; /* visually balances the italic overhang */
+      color: var(--ink);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: clamp(42px, 7vw, 68px);
+      font-style: italic;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      line-height: 0.9;
+      text-transform: lowercase;
+    }
+    @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+      .site-title {
+        background-image: radial-gradient(circle, var(--ink) 0 1.35px, transparent 1.6px);
+        background-position: 0 1px;
+        background-size: 4px 4px;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+    }
+
     /* ── Skin picker ── */
     .skin-bar {
       display: flex;
@@ -111,7 +135,7 @@
       gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 6px;
+      margin-top: 14px;
       padding: 6px 10px;
       background: var(--panel);
       border: 2px solid var(--border);
@@ -389,9 +413,11 @@
 
     @media (max-width: 600px) {
       body { padding-top: 12px; padding-bottom: 20px; }
+      .site-title { font-size: 38px; margin-bottom: 4px; }
       .window { margin-top: 8px; }
       .window-content { padding: 10px; gap: 8px; }
       button { font-size: 14px; padding: 10px 8px 8px; line-height: 1.2; }
+      .skin-bar { margin-top: 10px; }
       .skin-bar-label { display: none; }
       .skin-swatch { font-size: 13px; padding: 3px 8px 1px; }
     }
@@ -1111,16 +1137,13 @@
 </head>
 <body>
 
+  <h1 class="site-title">mood computer</h1>
+
   <!-- DOS prompt line (terminal skin only) -->
   <div id="dosPrompt" aria-hidden="true">C:\MOODS&gt; play mood <span class="dos-cursor">█</span></div>
 
   <!-- GeoCities under-construction marquee (geocities skin only) -->
   <div id="geoBanner" aria-hidden="true"><span class="geo-marquee">🚧 UNDER CONSTRUCTION 🚧 &nbsp;&nbsp; ♥ WELCOME TO MY MOODS PAGE ♥ &nbsp;&nbsp; ★ Best viewed in Netscape Navigator @ 800×600 ★ &nbsp;&nbsp; ✉ Sign my guestbook! &nbsp;&nbsp; 🔥 You are visitor #000001 🔥 &nbsp;&nbsp;</span></div>
-
-  <!-- Skin picker — buttons injected by JS from the SKINS list -->
-  <div class="skin-bar" id="skinBar">
-    <span class="skin-bar-label">skin:</span>
-  </div>
 
   <!-- Weather Channel retro backdrop (WeatherStar "Local on the 8s" style).
        Only visible in the weather skin. The mood video plays hidden behind
@@ -1206,6 +1229,11 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- Skin picker — buttons injected by JS from the SKINS list -->
+  <div class="skin-bar" id="skinBar">
+    <span class="skin-bar-label">skin:</span>
   </div>
 
   <!-- Windows 98 taskbar (win98 skin only) -->
