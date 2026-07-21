@@ -209,6 +209,21 @@
       .download-bar { font-size: 13px; }
     }
 
+    /* ── Taxi drop-down slot ──
+       The title Easter egg parks the player above the Moods window instead of
+       beside a button. This empty element reserves the space in normal flow —
+       JS sets its height to the player's — so the window is pushed down rather
+       than covered. The player itself is positioned over it and never moves in
+       the DOM, because re-parenting a node containing an iframe reloads it
+       (see positionPlayer). */
+    #topSlot {
+      width: 100%;
+      max-width: 680px;
+      height: 0;
+      transition: height 0.4s ease;
+    }
+    .player-window.docked-top { position: absolute; z-index: 2; }
+
     /* ── Window ── */
     .window {
       margin-top: 8px;
@@ -1229,6 +1244,9 @@
     <div class="aol-tb-mail">You've Got Mail!</div>
   </div>
 
+  <!-- Space the Taxi drop-down pushes open above the window -->
+  <div id="topSlot" aria-hidden="true"></div>
+
   <!-- Main window -->
   <div class="window">
     <div class="title-bar">
@@ -1253,7 +1271,7 @@
             <div class="player-slot" id="slotB"><div id="playerB"></div></div>
             <div class="player-loading" id="playerLoading"></div>
           </div>
-          <div class="player-hint">keep clicking on the video until something clicks</div>
+          <div class="player-hint">keep clicking on the mood until you find something you want</div>
         </div>
       </div>
 
@@ -1519,6 +1537,41 @@
       });
     });
 
+    // Dock the player into the slot above the window (Taxi) and back out again.
+    // Everything here is positioning only — the node stays where it is.
+    const topSlot = document.getElementById('topSlot');
+
+    function syncTopDock() {
+      const wrap = document.getElementById('playerWrap');
+      if (!wrap.classList.contains('docked-top')) return;
+      // Match the Moods window's width, then let the 16:9 content decide the
+      // height the slot has to reserve.
+      wrap.style.width = document.querySelector('.window').getBoundingClientRect().width + 'px';
+      topSlot.style.height = wrap.scrollHeight + 'px';
+      const r = topSlot.getBoundingClientRect();
+      wrap.style.left = (r.left + window.scrollX) + 'px';
+      wrap.style.top  = (r.top  + window.scrollY) + 'px';
+    }
+
+    function dockPlayerTop() {
+      document.getElementById('playerWrap').classList.add('docked-top');
+      syncTopDock();
+    }
+
+    function undockPlayerTop() {
+      const wrap = document.getElementById('playerWrap');
+      if (!wrap.classList.contains('docked-top')) return;
+      wrap.classList.remove('docked-top');
+      wrap.style.width = wrap.style.left = wrap.style.top = '';
+      topSlot.style.height = '';
+    }
+
+    window.addEventListener('resize', syncTopDock);
+    // Skins change the window's borders and padding, which changes its width.
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(syncTopDock).observe(document.querySelector('.window'));
+    }
+
     // Hidden mood: clicking the site title drops the player down and plays the
     // Taxi theme. Same idea as the clock — no button, no picker entry.
     (() => {
@@ -1529,6 +1582,7 @@
       title.style.cursor = 'pointer';
       const activateTaxi = () => {
         if (!MOODS.taxi) return;   // playlists.json may not have landed yet
+        dockPlayerTop();
         onMoodClick('taxi', null);
       };
       title.addEventListener('click', activateTaxi);
@@ -1826,6 +1880,8 @@
     }
 
     function onMoodClick(mood, btn) {
+      // Any ordinary mood pulls the player back down into the button grid.
+      if (mood !== 'taxi') undockPlayerTop();
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       document.getElementById('hint').textContent = 'playing: ' + mood.toUpperCase();
@@ -1883,6 +1939,7 @@
     // Close button hides player — no DOM move so the iframe doesn't reload
     document.getElementById('playerClose').addEventListener('click', () => {
       hidePlayer();
+      undockPlayerTop();
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
       document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a> · <a href="/privacy/">privacy</a>';
       clearStall();
