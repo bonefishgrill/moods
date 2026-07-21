@@ -174,6 +174,41 @@
       text-shadow: none;
     }
 
+    /* ── Mac app download ── */
+    /* Styled from the same button variables the skin picker uses, so every
+       skin themes it without a per-skin override. */
+    .download-bar {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 7px 14px 5px;
+      font-family: var(--font);
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: var(--btn-ink);
+      border: 2px solid var(--btn-border);
+      border-radius: var(--btn-radius);
+      box-shadow: var(--btn-shadow);
+      text-shadow: var(--btn-text-shadow);
+      line-height: 1.2;
+    }
+    .download-bar:hover { filter: brightness(1.08); }
+    .download-bar:active {
+      background: var(--btn-active-bg);
+      color: var(--btn-active-ink);
+      text-shadow: none;
+    }
+    .download-meta { font-size: 13px; opacity: 0.6; }
+    @media (max-width: 560px) {
+      .download-bar { font-size: 13px; }
+      .download-meta { display: none; }
+    }
+
     /* ── Window ── */
     .window {
       margin-top: 8px;
@@ -1223,7 +1258,7 @@
       </div>
 
       <div class="status-bar">
-        <span id="hint"><a href="https://ben-schechter.com">created by ben schechter</a> · <a href="/privacy/">privacy</a> · <a href="https://github.com/bonefishgrill/moods/releases/latest/download/Moods.dmg">mac app</a></span>
+        <span id="hint"><a href="https://ben-schechter.com">created by ben schechter</a> · <a href="/privacy/">privacy</a></span>
         <span class="hit-counter" id="visitCount"></span>
         <span id="clock"></span>
       </div>
@@ -1235,6 +1270,13 @@
   <div class="skin-bar" id="skinBar">
     <span class="skin-bar-label">skin:</span>
   </div>
+
+  <!-- Mac app download -->
+  <a class="download-bar" href="https://github.com/bonefishgrill/moods/releases/latest/download/Moods.dmg">
+    <span aria-hidden="true">⬇</span>
+    <span>download the mac app</span>
+    <span class="download-meta">universal · macOS 11+</span>
+  </a>
 
   <!-- Windows 98 taskbar (win98 skin only) -->
   <div id="win98bar" aria-hidden="true">
