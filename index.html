@@ -1454,13 +1454,18 @@
 
     // `no-cache` forces a quick revalidation so playlist edits show up on the
     // next load instead of being masked by a stale HTTP-cached copy.
+    // Moods that exist in the playlist but get no button — each one is reached
+    // through its own hidden gesture. 'weatherchannel' is the clock, 'taxi' is
+    // the site title.
+    const HIDDEN_MOODS = new Set(['weatherchannel', 'taxi']);
+
     fetch('playlists.json', { cache: 'no-cache' })
       .then(r => r.json())
       .then(data => {
         MOODS = data;
         const container = document.getElementById('buttons');
         Object.entries(MOODS).forEach(([mood, val]) => {
-          if (mood === 'weatherchannel') return;
+          if (HIDDEN_MOODS.has(mood)) return;
           const btn = document.createElement('button');
           btn.dataset.mood = mood;
           btn.textContent = val.label;
@@ -1513,6 +1518,27 @@
         }
       });
     });
+
+    // Hidden mood: clicking the site title drops the player down and plays the
+    // Taxi theme. Same idea as the clock — no button, no picker entry.
+    (() => {
+      const title = document.querySelector('.site-title');
+      if (!title) return;
+      title.setAttribute('role', 'button');
+      title.setAttribute('tabindex', '0');
+      title.style.cursor = 'pointer';
+      const activateTaxi = () => {
+        if (!MOODS.taxi) return;   // playlists.json may not have landed yet
+        onMoodClick('taxi', null);
+      };
+      title.addEventListener('click', activateTaxi);
+      title.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activateTaxi();
+        }
+      });
+    })();
 
     // Screen wake lock — keeps phone screen on while playing
     let wakeLock = null;
