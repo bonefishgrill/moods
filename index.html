@@ -1223,7 +1223,7 @@
       </div>
 
       <div class="status-bar">
-        <span id="hint"><a href="https://ben-schechter.com">created by ben schechter</a> · <a href="/privacy/">privacy</a></span>
+        <span id="hint"><a href="https://ben-schechter.com">created by ben schechter</a> · <a href="/privacy/">privacy</a> · <a href="https://github.com/bonefishgrill/moods/releases/latest/download/Moods.dmg">mac app</a></span>
         <span class="hit-counter" id="visitCount"></span>
         <span id="clock"></span>
       </div>
@@ -1270,8 +1270,8 @@
       const bar = document.getElementById('skinBar');
 
       // Build the picker buttons. "weather" is intentionally left out of the
-      // picker — it's reached via the "Put on the Weather Channel" mood button
-      // instead — but it stays a valid skin id so applySkin('weather') works.
+      // picker — it is a hidden clock Easter egg — but it stays a valid skin
+      // id so applySkin('weather') works.
       SKINS.forEach(([id, label]) => {
         if (id === 'weather') return;
         const b = document.createElement('button');
@@ -1400,7 +1400,11 @@
         setTicker(t);
       }
 
-      load().catch(() => { /* keep the loading fallback */ });
+      let loadPromise = null;
+      window.__moodsLoadWeather = () => {
+        if (!loadPromise) loadPromise = load().catch(() => { /* keep the loading fallback */ });
+        return loadPromise;
+      };
     })();
   </script>
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -1415,6 +1419,7 @@
         MOODS = data;
         const container = document.getElementById('buttons');
         Object.entries(MOODS).forEach(([mood, val]) => {
+          if (mood === 'weatherchannel') return;
           const btn = document.createElement('button');
           btn.dataset.mood = mood;
           btn.textContent = val.label;
@@ -1446,6 +1451,27 @@
     }
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Hidden Weather Channel mood: clicking either visible clock activates it
+    // without advertising it in the mood list or skin picker.
+    [document.getElementById('clock'), document.getElementById('w98clock')].forEach(clock => {
+      if (!clock) return;
+      clock.setAttribute('role', 'button');
+      clock.setAttribute('tabindex', '0');
+      const activateWeather = () => {
+        if (!MOODS.weatherchannel) return;
+        if (window.__moodsLoadWeather) window.__moodsLoadWeather();
+        if (window.__moodsSetSkin) window.__moodsSetSkin('weather');
+        onMoodClick('weatherchannel', null);
+      };
+      clock.addEventListener('click', activateWeather);
+      clock.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activateWeather();
+        }
+      });
+    });
 
     // Screen wake lock — keeps phone screen on while playing
     let wakeLock = null;
@@ -1713,7 +1739,7 @@
       const playerWrap = document.getElementById('playerWrap');
       const buttonsEl = document.getElementById('buttons');
       const btns = Array.from(buttonsEl.querySelectorAll('[data-mood]'));
-      const idx = btns.indexOf(btn);
+      const idx = btn ? btns.indexOf(btn) : Math.max(0, btns.length - 1);
       const clickedRow = Math.floor(idx / 2);
 
       // `order` alone left a gap that CSS grid's auto-placement doesn't
@@ -1733,14 +1759,8 @@
     }
 
     function onMoodClick(mood, btn) {
-      // The "Put on the Weather Channel" mood also flips into the weather skin,
-      // so its calm playlist becomes the soundtrack over the WeatherStar scene.
-      if (mood === 'weatherchannel' && window.__moodsSetSkin) {
-        window.__moodsSetSkin('weather');
-      }
-
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      if (btn) btn.classList.add('active');
       document.getElementById('hint').textContent = 'playing: ' + mood.toUpperCase();
       document.getElementById('playerTitle').textContent = mood.toUpperCase();
 
