@@ -1582,6 +1582,8 @@
       title.style.cursor = 'pointer';
       const activateTaxi = () => {
         if (!MOODS.taxi) return;   // playlists.json may not have landed yet
+        // Clicking the title again puts it away.
+        if (currentMood === 'taxi') { closePlayer(); return; }
         dockPlayerTop();
         onMoodClick('taxi', null);
       };
@@ -1936,8 +1938,9 @@
       }
     }
 
-    // Close button hides player — no DOM move so the iframe doesn't reload
-    document.getElementById('playerClose').addEventListener('click', () => {
+    // Stops playback and hides the player without moving it in the DOM, so the
+    // iframe doesn't reload.
+    function closePlayer() {
       hidePlayer();
       undockPlayerTop();
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
@@ -1948,7 +1951,10 @@
       if ('mediaSession' in navigator) navigator.mediaSession.metadata = null;
       releaseWakeLock();
       currentMood = null;
-    });
+    }
+
+    // Close button hides player — no DOM move so the iframe doesn't reload
+    document.getElementById('playerClose').addEventListener('click', closePlayer);
   </script>
 </body>
 </html>
