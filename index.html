@@ -1477,6 +1477,10 @@
     // the site title.
     const HIDDEN_MOODS = new Set(['weatherchannel', 'taxi']);
 
+    // The status bar's resting state. Playing a mood overwrites it, so closing
+    // the player has to put every link back — including the coffee one.
+    const HINT_HTML = document.getElementById('hint').innerHTML;
+
     fetch('playlists.json', { cache: 'no-cache' })
       .then(r => r.json())
       .then(data => {
@@ -1944,7 +1948,7 @@
       hidePlayer();
       undockPlayerTop();
       document.querySelectorAll('[data-mood]').forEach(b => b.classList.remove('active'));
-      document.getElementById('hint').innerHTML = '<a href="https://ben-schechter.com">created by ben schechter</a> · <a href="/privacy/">privacy</a>';
+      document.getElementById('hint').innerHTML = HINT_HTML;
       clearStall();
       if (activePlayer() && activePlayer().stopVideo) activePlayer().stopVideo();
       setMediaPlaybackState('none');
