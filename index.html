@@ -1499,11 +1499,20 @@
         tryPrimeActive();
       });
 
-    // Visitor counter
-    fetch('https://api.counterapi.dev/v1/moods-computer/visits/up')
-      .then(r => r.json())
+    // Visitor counter. counterapi v1 was retired (HTTP 410) and v2 wants a
+    // Bearer key, which a static public page can't keep secret. Abacus needs
+    // no key to increment, and the counter was seeded at 2000 on creation, so
+    // the number here is the real value — no offset to keep in sync.
+    //
+    // A dead or changed API must leave the counter blank rather than print
+    // something: fetch only rejects on network failure, so an HTTP error still
+    // arrives with a parseable body, and a missing value would have rendered
+    // as "visitor count 000NaN".
+    fetch('https://abacus.jasoncameron.dev/hit/moods.computer/visits')
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
       .then(d => {
-        const n = d.count + 696;
+        const n = d.value;
+        if (!Number.isFinite(n)) return;
         document.getElementById('visitCount').textContent =
           'visitor count ' + String(n).padStart(6, '0');
       })
