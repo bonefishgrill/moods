@@ -1,5 +1,8 @@
-const CACHE = 'moods-v3';
-const ASSETS = ['/', '/index.html', '/playlists.json', '/privacy/', '/privacy/index.html'];
+// Bumped when ASSETS changes: addAll() rejects as a whole if any entry 404s,
+// which would leave the worker uninstalled and kill offline support entirely.
+// The privacy pages were removed, so they had to come out of this list too.
+const CACHE = 'moods-v4';
+const ASSETS = ['/', '/index.html', '/playlists.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
