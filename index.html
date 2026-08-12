@@ -1588,10 +1588,12 @@
 
     // `no-cache` forces a quick revalidation so playlist edits show up on the
     // next load instead of being masked by a stale HTTP-cached copy.
-    // Moods that exist in the playlist but get no button — each one is reached
-    // through its own hidden gesture. 'weatherchannel' is the clock, 'taxi' is
-    // the site title.
-    const HIDDEN_MOODS = new Set(['weatherchannel', 'taxi']);
+    // Moods that exist in the playlist but get no button. 'weatherchannel' and
+    // 'taxi' are each reached through a hidden gesture — the clock and the site
+    // title. 'maze' is archived: its playlist is kept intact but it has no
+    // button and no gesture, so listing it here is the whole of its retirement.
+    // Delete it from the set to bring it back.
+    const HIDDEN_MOODS = new Set(['weatherchannel', 'taxi', 'maze']);
 
     // The status bar's resting state. Playing a mood overwrites it, so closing
     // the player has to put every link back — including the coffee one.
