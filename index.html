@@ -209,6 +209,71 @@
       .download-bar { font-size: 13px; }
     }
 
+    /* ── Email updates signup ──
+       Styled from the same button/panel variables as the skin picker and
+       download bar, so every skin themes it for free. */
+    .email-bar {
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--window-radius);
+      max-width: 680px;
+      width: 100%;
+    }
+    .email-bar-label {
+      display: flex;
+      align-items: center;
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.7;
+    }
+    .email-input {
+      flex: 1 1 180px;
+      min-width: 0;
+      font-family: var(--font);
+      font-size: 16px;              /* >=16px keeps iOS Safari from zooming on focus */
+      padding: 6px 10px;
+      background: var(--btn-bg);
+      color: var(--btn-ink);
+      border: 2px solid var(--btn-border);
+      border-radius: var(--btn-radius);
+      text-shadow: var(--btn-text-shadow);
+    }
+    .email-input::placeholder { color: var(--btn-ink); opacity: 0.5; }
+    .email-input:focus { outline: 2px dashed var(--ink); outline-offset: 2px; }
+    .email-submit {
+      flex: 0 0 auto;
+      font-size: 16px;
+      padding: 6px 16px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .email-msg {
+      flex: 1 1 100%;
+      text-align: center;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--status-ink);
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+      min-height: 0;
+    }
+    .email-msg:empty { display: none; }
+    @media (max-width: 560px) {
+      .email-bar-label { display: none; }
+      .email-input { font-size: 16px; }
+    }
+
     /* ── Taxi drop-down slot ──
        The title Easter egg parks the player above the Moods window instead of
        beside a button. This empty element reserves the space in normal flow —
@@ -1295,6 +1360,16 @@
     <span>download the mac app</span>
   </a>
 
+  <!-- Email updates signup — submits straight to Buttondown, which stores the
+       addresses and sends the mail. No backend of our own. -->
+  <form class="email-bar" id="emailBar" novalidate>
+    <label class="email-bar-label" for="emailInput">updates:</label>
+    <input class="email-input" id="emailInput" type="email" name="email"
+           placeholder="your@email.com" autocomplete="email" required>
+    <button class="email-submit" type="submit">get updates</button>
+    <span class="email-msg" id="emailMsg" aria-live="polite"></span>
+  </form>
+
   <!-- Windows 98 taskbar (win98 skin only) -->
   <div id="win98bar" aria-hidden="true">
     <button class="w98-start"><span class="w98-flag"></span>Start</button>
@@ -1306,6 +1381,47 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
     }
+  </script>
+  <script>
+    // ── Email updates signup ──
+    // Buttondown collects the addresses AND sends the updates, so there is no
+    // backend and no list to store here. Its embed endpoint is cross-origin
+    // and answers with an opaque response (unreadable from JS), so we POST
+    // with mode:'no-cors' and confirm optimistically; genuine network errors
+    // still surface, and Buttondown emails the visitor to confirm anyway
+    // (double opt-in), which is the real check on a bad address.
+    (function () {
+      const BUTTONDOWN_USER = 'benschechter';
+      const EMAIL_ENDPOINT =
+        'https://buttondown.com/api/emails/embed-subscribe/' + BUTTONDOWN_USER;
+
+      const form = document.getElementById('emailBar');
+      const input = document.getElementById('emailInput');
+      const msg = document.getElementById('emailMsg');
+      if (!form) return;
+
+      const say = t => { msg.textContent = t; };
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = input.value.trim();
+        if (!input.checkValidity() || !email) { say('enter a valid email'); return; }
+
+        say('sending…');
+        try {
+          await fetch(EMAIL_ENDPOINT, {
+            method: 'POST',
+            mode: 'no-cors',            // embed endpoint sends no CORS headers
+            body: new FormData(form),   // sends the `email` field
+          });
+          form.reset();
+          say('thanks — check your inbox to confirm ♥');
+          if (window.gtag) gtag('event', 'email_signup');
+        } catch (err) {
+          say('network error — try again');
+        }
+      });
+    })();
   </script>
   <script>
     // ── Skin switching ── choice persists across visits via localStorage.
