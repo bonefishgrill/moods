@@ -1595,6 +1595,12 @@
     // Delete it from the set to bring it back.
     const HIDDEN_MOODS = new Set(['weatherchannel', 'taxi', 'maze']);
 
+    // Hover preloading needs a real hover. On phones a touchstart lands at the
+    // same moment as the tap (or mid-scroll), so the second player only cost a
+    // whole extra YouTube embed plus stray video downloads. Touch devices get
+    // one player and load on tap.
+    const CAN_HOVER = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     // The status bar's resting state. Playing a mood overwrites it, so closing
     // the player has to put every link back — including the coffee one.
     const HINT_HTML = document.getElementById('hint').innerHTML;
@@ -1610,8 +1616,10 @@
           btn.dataset.mood = mood;
           btn.textContent = val.label;
           btn.addEventListener('click', () => onMoodClick(mood, btn));
-          btn.addEventListener('mouseenter', () => startPreload(mood));
-          btn.addEventListener('touchstart', () => startPreload(mood), { passive: true });
+          if (CAN_HOVER) {
+            btn.addEventListener('mouseenter', () => startPreload(mood));
+            btn.addEventListener('touchstart', () => startPreload(mood), { passive: true });
+          }
           container.appendChild(btn);
         });
         tryPrimeActive();
@@ -1902,6 +1910,9 @@
           onStateChange: (e) => {
             const isActive = key === activeKey;
             if (e.data === YT.PlayerState.PLAYING) {
+              // The muted warm-up video only needs to start once. Pause it so it
+              // doesn't keep streaming in the background before any mood is picked.
+              if (isActive && !currentMood) { e.target.pauseVideo(); return; }
               if (isActive) { clearStall(); showPlayer(); hideLoading(); setMediaPlaybackState('playing'); }
               else { clearPreloadStall(); preloadReady = true; }
             } else if (e.data === YT.PlayerState.PAUSED && isActive) {
@@ -1930,7 +1941,7 @@
 
     window.onYouTubeIframeAPIReady = function() {
       createPlayer('A');
-      createPlayer('B');
+      if (CAN_HOVER) createPlayer('B');
     };
 
     function getPool(mood) {
